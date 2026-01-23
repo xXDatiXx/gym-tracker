@@ -1,1046 +1,1406 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Gym Tracker">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#1F2937">
-  <title>Registro de Entrenamiento</title>
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>💪</text></svg>">
-  
-  <!-- Apple Touch Icons -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%231F2937'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>💪</text></svg>">
-  
-  <!-- Manifest -->
-  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkd5bSBUcmFja2VyIiwKICAic2hvcnRfbmFtZSI6ICJHeW0iLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzFGMjkzNyIsCiAgInRoZW1lX2NvbG9yIjogIiMxRjI5MzciLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsPHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxOTIgMTkyJz48cmVjdCB3aWR0aD0nMTkyJyBoZWlnaHQ9JzE5MicgZmlsbD0nJTIzMUYyOTM3Jy8+PHRleHQgeD0nNTAlJyB5PSc1MCUnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZvbnQtc2l6ZT0nMTIwJz7wn4qqPC90ZXh0Pjwvc3ZnPiIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgNTEyIDUxMic+PHJlY3Qgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIGZpbGw9JyUyMzFGMjkzNycvPjx0ZXh0IHg9JzUwJScgeT0nNTAlJyBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmb250LXNpemU9JzM4MCc+8J+KqjwvdGV4dD48L3N2Zz4iLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgICB9CiAgXQp9">
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { 
-      margin: 0; 
-      padding: 0;
-      overscroll-behavior: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-    input, textarea {
-      -webkit-user-select: text;
-      user-select: text;
-    }
-    /* PWA splash screens */
-    @media (display-mode: standalone) {
-      body {
-        padding-top: env(safe-area-inset-top);
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Ajustes menores para prevenir scroll innecesario en móviles */
+        body { touch-action: manipulation; }
+    </style>
 </head>
 <body>
-  <div id="root"></div>
+    <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    // Iconos SVG simplificados
-    const Download = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-      </svg>
-    );
-
-    const Plus = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-    );
-
-    const Trash2 = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-      </svg>
-    );
-
-    const TrendingUp = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-      </svg>
-    );
-
-    const BarChart3 = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="9"/><rect x="14" y="5" width="3" height="14"/>
-      </svg>
-    );
-
-    const Moon = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    );
-
-    const Sun = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-    );
-
-    const ChevronDown = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-    );
-
-    const ChevronUp = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="18 15 12 9 6 15"/>
-      </svg>
-    );
-
-    const Settings = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m8.66-15.66l-4.24 4.24m-4.24 4.24l-4.24 4.24M23 12h-6m-6 0H1m20.66 8.66l-4.24-4.24m-4.24-4.24l-4.24-4.24"/>
-      </svg>
-    );
-
-    const X = ({ size = 20 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    );
-
-    const GymTracker = () => {
-      const diasDefault = {
-        lunes: {
-          nombre: 'Lunes - Push Pecho',
-          ejercicios: [
-            'Press de Banca Plano (Barra)',
-            'Press Militar de Pie (Barra)',
-            'Fondos en Paralelas (Lastrados)',
-            'Press Inclinado Mancuernas (Neutro)',
-            'Elevaciones Laterales en Polea',
-            'Press Francés (Barra Z)'
-          ]
-        },
-        martes: {
-          nombre: 'Martes - Pull Espalda',
-          ejercicios: [
-            'Dominadas Pronas (Lastradas)',
-            'Remo Pendlay (Barra)',
-            'Jalón al Pecho Agarre Supino',
-            'Remo en Polea Baja (Cuerda)',
-            'Face Pulls',
-            'Curl Martillo en Polea'
-          ]
-        },
-        miercoles: {
-          nombre: 'Miércoles - Pierna + Abs',
-          ejercicios: [
-            'Sentadilla Trasera (Barra)',
-            'Peso Muerto Rumano (Mancuernas)',
-            'Prensa de Piernas (Pies bajos)',
-            'Leg Curl (Femoral) Acostado',
-            'Elevación de Talones de pie',
-            'Crunch en Polea Alta (Lastrado)'
-          ]
-        },
-        jueves: {
-          nombre: 'Jueves - Push Hombro',
-          ejercicios: [
-            'Press Inclinado (Barra)',
-            'Press Arnold (Mancuernas)',
-            'Press de Banca con Mancuernas',
-            'Peck Deck (Aperturas Máquina)',
-            'Extensiones Tríceps sobre cabeza',
-            'Flexiones Diamante (Lastradas)'
-          ]
-        },
-        viernes: {
-          nombre: 'Viernes - Pull Bíceps',
-          ejercicios: [
-            'Chin-ups / Supinas (Lastradas)',
-            'Remo T',
-            'Pull-over en Polea Alta',
-            'Remo con Mancuerna a una mano',
-            'Curl en Banco Inclinado (Manc.)',
-            'Plancha Abdominal (Lastrada)'
-          ]
-        }
-      };
-
-      const [dias, setDias] = useState(diasDefault);
-      const [diaActivo, setDiaActivo] = useState('lunes');
-      const [vistaActiva, setVistaActiva] = useState('registro');
-      const [registros, setRegistros] = useState({});
-      const [temaOscuro, setTemaOscuro] = useState(false);
-      const [archivoExpandido, setArchivoExpandido] = useState({});
-      const [sesionesExpandidas, setSesionesExpandidas] = useState({});
-      const [diasSeleccionados, setDiasSeleccionados] = useState({
-        lunes: true,
-        martes: false,
-        miercoles: false,
-        jueves: false,
-        viernes: false
-      });
-      const [ultimaSesionAgregada, setUltimaSesionAgregada] = useState(null);
-      const [editandoDia, setEditandoDia] = useState(null);
-      const [nuevoEjercicio, setNuevoEjercicio] = useState('');
-
-      useEffect(() => {
-        const stored = localStorage.getItem('gymTrackerData');
-        const storedTema = localStorage.getItem('gymTrackerTema');
-        const storedDias = localStorage.getItem('gymTrackerDias');
-        
-        if (stored) setRegistros(JSON.parse(stored));
-        if (storedTema) setTemaOscuro(storedTema === 'oscuro');
-        if (storedDias) setDias(JSON.parse(storedDias));
-      }, []);
-
-      useEffect(() => {
-        localStorage.setItem('gymTrackerData', JSON.stringify(registros));
-      }, [registros]);
-
-      useEffect(() => {
-        localStorage.setItem('gymTrackerTema', temaOscuro ? 'oscuro' : 'claro');
-      }, [temaOscuro]);
-
-      useEffect(() => {
-        localStorage.setItem('gymTrackerDias', JSON.stringify(dias));
-      }, [dias]);
-
-      const coloresDias = {
-        lunes: '#3B82F6',
-        martes: '#EF4444',
-        miercoles: '#10B981',
-        jueves: '#F59E0B',
-        viernes: '#8B5CF6'
-      };
-
-      const agregarSesionCompleta = (dia) => {
-        const hoy = new Date();
-        const fecha = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-        const nuevosRegistros = { ...registros };
-        
-        if (!nuevosRegistros[dia]) nuevosRegistros[dia] = [];
-        
-        const sessionId = `${fecha}-${Date.now()}`;
-        
-        dias[dia].ejercicios.forEach(ejercicio => {
-          nuevosRegistros[dia].push({
-            id: Date.now() + Math.random(),
-            sessionId,
-            fecha,
-            ejercicio,
-            series: 3,
-            reps: 8,
-            peso: 0,
-            rir: ''
-          });
-        });
-        
-        setRegistros(nuevosRegistros);
-        setUltimaSesionAgregada(sessionId);
-        setSesionesExpandidas({...sesionesExpandidas, [sessionId]: true});
-        
-        setTimeout(() => setUltimaSesionAgregada(null), 3000);
-      };
-
-      const actualizarFechaSesion = (dia, sessionId, nuevaFecha) => {
-        const nuevosRegistros = { ...registros };
-        nuevosRegistros[dia] = nuevosRegistros[dia].map(reg => 
-          reg.sessionId === sessionId ? { ...reg, fecha: nuevaFecha } : reg
-        );
-        setRegistros(nuevosRegistros);
-      };
-
-      const actualizarRegistro = (dia, id, campo, valor) => {
-        const nuevosRegistros = { ...registros };
-        const index = nuevosRegistros[dia].findIndex(r => r.id === id);
-        if (index !== -1) {
-          nuevosRegistros[dia][index][campo] = valor;
-          setRegistros(nuevosRegistros);
-        }
-      };
-
-      const eliminarRegistro = (dia, id) => {
-        const nuevosRegistros = { ...registros };
-        nuevosRegistros[dia] = nuevosRegistros[dia].filter(r => r.id !== id);
-        setRegistros(nuevosRegistros);
-      };
-
-      const calcularVolumen = (registro) => {
-        return registro.series * registro.reps * registro.peso;
-      };
-
-      const calcularVolumenSesion = (ejercicios) => {
-        return ejercicios.reduce((total, reg) => total + calcularVolumen(reg), 0);
-      };
-
-      const obtenerProgresionPorDias = () => {
-        const datos = {};
-        
-        Object.keys(diasSeleccionados).forEach(dia => {
-          if (!diasSeleccionados[dia] || !registros[dia]) return;
-          
-          dias[dia].ejercicios.forEach(ejercicio => {
-            if (!datos[ejercicio]) datos[ejercicio] = [];
-            
-            registros[dia]
-              .filter(r => r.ejercicio === ejercicio)
-              .forEach(r => {
-                datos[ejercicio].push({
-                  fecha: r.fecha,
-                  peso: r.peso,
-                  dia: dia
-                });
-              });
-          });
-        });
-        
-        Object.keys(datos).forEach(ejercicio => {
-          datos[ejercicio].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-        });
-        
-        return datos;
-      };
-
-      const obtenerVolumenPorDias = () => {
-        const datos = {};
-        
-        Object.keys(diasSeleccionados).forEach(dia => {
-          if (!diasSeleccionados[dia] || !registros[dia]) return;
-          
-          const sesiones = agruparPorSesion(registros[dia]);
-          sesiones.forEach(sesion => {
-            if (!datos[dia]) datos[dia] = [];
-            datos[dia].push({
-              fecha: sesion.fecha,
-              volumen: calcularVolumenSesion(sesion.ejercicios)
-            });
-          });
-        });
-        
-        Object.keys(datos).forEach(dia => {
-          datos[dia].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-        });
-        
-        return datos;
-      };
-
-      const agruparPorSesion = (registrosDia) => {
-        if (!registrosDia) return [];
-        const sesiones = {};
-        registrosDia.forEach(reg => {
-          const key = reg.sessionId || reg.fecha;
-          if (!sesiones[key]) {
-            sesiones[key] = {
-              fecha: reg.fecha,
-              sessionId: key,
-              ejercicios: []
+        const GymTracker = () => {
+            const diasDefault = {
+                lunes: {
+                nombre: 'Lunes - Push Pecho',
+                ejercicios: [
+                    'Press de Banca Plano (Barra)',
+                    'Press Militar de Pie (Barra)',
+                    'Fondos en Paralelas (Lastrados)',
+                    'Press Inclinado Mancuernas (Neutro)',
+                    'Elevaciones Laterales en Polea',
+                    'Press Francés (Barra Z)'
+                ]
+                },
+                martes: {
+                nombre: 'Martes - Pull Espalda',
+                ejercicios: [
+                    'Dominadas Pronas (Lastradas)',
+                    'Remo Pendlay (Barra)',
+                    'Jalón al Pecho Agarre Supino',
+                    'Remo en Polea Baja (Cuerda)',
+                    'Face Pulls',
+                    'Curl Martillo en Polea'
+                ]
+                },
+                miercoles: {
+                nombre: 'Miércoles - Pierna + Abs',
+                ejercicios: [
+                    'Sentadilla Trasera (Barra)',
+                    'Peso Muerto Rumano (Mancuernas)',
+                    'Prensa de Piernas (Pies bajos)',
+                    'Leg Curl (Femoral) Acostado',
+                    'Elevación de Talones de pie',
+                    'Crunch en Polea Alta (Lastrado)'
+                ]
+                },
+                jueves: {
+                nombre: 'Jueves - Push Hombro',
+                ejercicios: [
+                    'Press Inclinado (Barra)',
+                    'Press Arnold (Mancuernas)',
+                    'Press de Banca con Mancuernas',
+                    'Peck Deck (Aperturas Máquina)',
+                    'Extensiones Tríceps sobre cabeza',
+                    'Flexiones Diamante (Lastradas)'
+                ]
+                },
+                viernes: {
+                nombre: 'Viernes - Pull Bíceps',
+                ejercicios: [
+                    'Chin-ups / Supinas (Lastradas)',
+                    'Remo T',
+                    'Pull-over en Polea Alta',
+                    'Remo con Mancuerna a una mano',
+                    'Curl en Banco Inclinado (Manc.)',
+                    'Plancha Abdominal (Lastrada)'
+                ]
+                }
             };
-          }
-          sesiones[key].ejercicios.push(reg);
-        });
-        return Object.values(sesiones).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      };
 
-      const toggleSesion = (sessionId) => {
-        setSesionesExpandidas({
-          ...sesionesExpandidas,
-          [sessionId]: !sesionesExpandidas[sessionId]
-        });
-      };
-
-      const agregarEjercicio = (dia) => {
-        if (!nuevoEjercicio.trim()) return;
-        const nuevosDias = { ...dias };
-        nuevosDias[dia].ejercicios.push(nuevoEjercicio.trim());
-        setDias(nuevosDias);
-        setNuevoEjercicio('');
-      };
-
-      const eliminarEjercicio = (dia, index) => {
-        const nuevosDias = { ...dias };
-        nuevosDias[dia].ejercicios.splice(index, 1);
-        setDias(nuevosDias);
-      };
-
-      const moverEjercicio = (dia, index, direccion) => {
-        const nuevosDias = { ...dias };
-        const ejercicios = [...nuevosDias[dia].ejercicios];
-        const newIndex = index + direccion;
-        
-        if (newIndex >= 0 && newIndex < ejercicios.length) {
-          [ejercicios[index], ejercicios[newIndex]] = [ejercicios[newIndex], ejercicios[index]];
-          nuevosDias[dia].ejercicios = ejercicios;
-          setDias(nuevosDias);
-        }
-      };
-
-      const exportarCSV = () => {
-        let csv = 'Día,Fecha,Ejercicio,Series,Reps,Peso,RIR,Volumen\n';
-        
-        Object.keys(registros).forEach(dia => {
-          if (registros[dia]) {
-            registros[dia].forEach(reg => {
-              csv += `${dias[dia].nombre},${reg.fecha},${reg.ejercicio},${reg.series},${reg.reps},${reg.peso},${reg.rir || ''},${calcularVolumen(reg)}\n`;
+            const [dias, setDias] = useState(diasDefault);
+            const [diaActivo, setDiaActivo] = useState('lunes');
+            const [vistaActiva, setVistaActiva] = useState('registro');
+            const [registros, setRegistros] = useState({});
+            const [temaOscuro, setTemaOscuro] = useState(false);
+            const [archivoExpandido, setArchivoExpandido] = useState({});
+            const [sesionesExpandidas, setSesionesExpandidas] = useState({});
+            const [diasSeleccionados, setDiasSeleccionados] = useState({
+                lunes: true,
+                martes: false,
+                miercoles: false,
+                jueves: false,
+                viernes: false
             });
-          }
-        });
-        
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'registro_entrenamiento.csv';
-        a.click();
-      };
+            const [ultimaSesionAgregada, setUltimaSesionAgregada] = useState(null);
+            const [editandoDia, setEditandoDia] = useState(null);
+            const [nuevoEjercicio, setNuevoEjercicio] = useState('');
+            const [mensajeImport, setMensajeImport] = useState(null);
+            
+            const [tiempoRestante, setTiempoRestante] = useState(90);
+            const [timerActivo, setTimerActivo] = useState(false);
+            const [tiempoPersonalizado, setTiempoPersonalizado] = useState('');
+            const [tiemposGuardados, setTiemposGuardados] = useState([90, 120]);
+            const [mostrarConfigTimer, setMostrarConfigTimer] = useState(false);
+            const timerInterval = useRef(null);
+            
+            const fileInputRef = useRef(null);
 
-      const bgPrimary = temaOscuro ? 'bg-gray-900' : 'bg-gray-50';
-      const bgSecundary = temaOscuro ? 'bg-gray-800' : 'bg-white';
-      const textPrimary = temaOscuro ? 'text-gray-100' : 'text-gray-800';
-      const textSecundary = temaOscuro ? 'text-gray-300' : 'text-gray-600';
-      const border = temaOscuro ? 'border-gray-700' : 'border-gray-200';
-      const hover = temaOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
-      const inputBg = temaOscuro ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+            useEffect(() => {
+                const stored = localStorage.getItem('gymTrackerData');
+                const storedTema = localStorage.getItem('gymTrackerTema');
+                const storedDias = localStorage.getItem('gymTrackerDias');
+                const storedTiempos = localStorage.getItem('gymTrackerTiempos');
+                
+                if (stored) setRegistros(JSON.parse(stored));
+                if (storedTema) setTemaOscuro(storedTema === 'oscuro');
+                if (storedDias) setDias(JSON.parse(storedDias));
+                if (storedTiempos) setTiemposGuardados(JSON.parse(storedTiempos));
+            }, []);
 
-      return (
-        <div className={`min-h-screen ${bgPrimary} p-4`}>
-          <div className="max-w-7xl mx-auto">
-            <div className={`${bgSecundary} rounded-lg shadow-lg p-6 mb-6`}>
-              <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-                <h1 className={`text-3xl font-bold ${textPrimary}`}>Registro de Entrenamiento</h1>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setVistaActiva('ajustes')}
-                    className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
-                  >
-                    <Settings size={20} />
-                  </button>
-                  <button
-                    onClick={() => setTemaOscuro(!temaOscuro)}
-                    className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
-                  >
-                    {temaOscuro ? <Sun size={20} /> : <Moon size={20} />}
-                  </button>
-                  <button
-                    onClick={exportarCSV}
-                    className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-                  >
-                    <Download size={20} />
-                    CSV
-                  </button>
-                </div>
-              </div>
+            useEffect(() => {
+                localStorage.setItem('gymTrackerData', JSON.stringify(registros));
+            }, [registros]);
 
-              <div className="flex gap-2 mb-6 overflow-x-auto">
-                <button
-                  onClick={() => setVistaActiva('registro')}
-                  className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${
-                    vistaActiva === 'registro'
-                      ? 'bg-blue-600 text-white'
-                      : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
-                  }`}
-                >
-                  Registro
-                </button>
-                <button
-                  onClick={() => setVistaActiva('progresion')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition whitespace-nowrap ${
-                    vistaActiva === 'progresion'
-                      ? 'bg-blue-600 text-white'
-                      : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
-                  }`}
-                >
-                  <TrendingUp size={18} />
-                  Progresión
-                </button>
-                <button
-                  onClick={() => setVistaActiva('volumen')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition whitespace-nowrap ${
-                    vistaActiva === 'volumen'
-                      ? 'bg-blue-600 text-white'
-                      : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
-                  }`}
-                >
-                  <BarChart3 size={18} />
-                  Volumen
-                </button>
-              </div>
+            useEffect(() => {
+                localStorage.setItem('gymTrackerTema', temaOscuro ? 'oscuro' : 'claro');
+            }, [temaOscuro]);
 
-              {vistaActiva === 'registro' && (
-                <>
-                  <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                    {Object.keys(dias).map(dia => (
-                      <button
-                        key={dia}
-                        onClick={() => setDiaActivo(dia)}
-                        className={`px-4 py-2 rounded-lg whitespace-nowrap transition ${
-                          diaActivo === dia
-                            ? 'bg-blue-600 text-white'
-                            : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
-                        }`}
-                      >
-                        {dias[dia].nombre}
-                      </button>
-                    ))}
-                  </div>
+            useEffect(() => {
+                localStorage.setItem('gymTrackerDias', JSON.stringify(dias));
+            }, [dias]);
 
-                  <div className="mb-4">
-                    <button
-                      onClick={() => agregarSesionCompleta(diaActivo)}
-                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                    >
-                      <Plus size={20} />
-                      Agregar Sesión del Día
-                    </button>
-                  </div>
+            useEffect(() => {
+                localStorage.setItem('gymTrackerTiempos', JSON.stringify(tiemposGuardados));
+            }, [tiemposGuardados]);
 
-                  {(() => {
-                    const sesiones = agruparPorSesion(registros[diaActivo]);
-                    const sesionesRecientes = sesiones.slice(0, 4);
-                    const sesionesArchivadas = sesiones.slice(4);
+            useEffect(() => {
+                if (timerActivo && tiempoRestante > 0) {
+                timerInterval.current = setInterval(() => {
+                    setTiempoRestante(prev => {
+                    if (prev <= 1) {
+                        setTimerActivo(false);
+                        reproducirSonido();
+                        return 0;
+                    }
+                    return prev - 1;
+                    });
+                }, 1000);
+                } else {
+                if (timerInterval.current) clearInterval(timerInterval.current);
+                }
+                return () => {
+                if (timerInterval.current) clearInterval(timerInterval.current);
+                };
+            }, [timerActivo, tiempoRestante]);
 
-                    return (
-                      <>
-                        <div className="space-y-4">
-                          {sesionesRecientes.map((sesion) => {
-                            const isExpanded = sesionesExpandidas[sesion.sessionId] !== false;
-                            const isNueva = ultimaSesionAgregada === sesion.sessionId;
+            const reproducirSonido = () => {
+                try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (error) {
+                console.log('Audio no disponible');
+                }
+            };
+
+            const iniciarTimer = (segundos) => {
+                setTiempoRestante(segundos);
+                setTimerActivo(true);
+            };
+
+            const pausarTimer = () => setTimerActivo(false);
+
+            const reiniciarTimer = () => {
+                setTimerActivo(false);
+                setTiempoRestante(90);
+            };
+
+            const agregarTiempoGuardado = () => {
+                const tiempo = parseInt(tiempoPersonalizado);
+                if (tiempo && tiempo > 0 && tiemposGuardados.length < 2) {
+                setTiemposGuardados([...tiemposGuardados, tiempo]);
+                setTiempoPersonalizado('');
+                }
+            };
+
+            const eliminarTiempoGuardado = (index) => {
+                setTiemposGuardados(tiemposGuardados.filter((_, i) => i !== index));
+            };
+
+            const formatearTiempo = (segundos) => {
+                const mins = Math.floor(segundos / 60);
+                const secs = segundos % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const coloresDias = {
+                lunes: '#3B82F6',
+                martes: '#EF4444',
+                miercoles: '#10B981',
+                jueves: '#F59E0B',
+                viernes: '#8B5CF6'
+            };
+
+            const obtenerDiaDesdeNombre = (nombreDia) => {
+                const mapeo = {
+                'Lunes - Push Pecho': 'lunes',
+                'Martes - Pull Espalda': 'martes',
+                'Miércoles - Pierna + Abs': 'miercoles',
+                'Jueves - Push Hombro': 'jueves',
+                'Viernes - Pull Bíceps': 'viernes'
+                };
+                return mapeo[nombreDia] || null;
+            };
+
+            const calcular1RM = (peso, reps) => {
+                if (reps === 1) return peso;
+                return Math.round(peso * (1 + reps / 30) * 10) / 10;
+            };
+
+            const obtener1RMPorEjercicio = (ejercicio) => {
+                let mejorRM = 0;
+                
+                Object.keys(registros).forEach(dia => {
+                if (registros[dia]) {
+                    registros[dia]
+                    .filter(r => r.ejercicio === ejercicio && r.peso > 0 && r.reps > 0)
+                    .forEach(r => {
+                        const rm = calcular1RM(r.peso, r.reps);
+                        if (rm > mejorRM) mejorRM = rm;
+                    });
+                }
+                });
+                
+                return mejorRM;
+            };
+
+            const calcularEstadisticas = () => {
+                const hoy = new Date();
+                const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+                const inicioMesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+                const finMesPasado = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+                
+                const todasLasFechas = new Set();
+                Object.keys(registros).forEach(dia => {
+                if (registros[dia]) {
+                    registros[dia].forEach(reg => todasLasFechas.add(reg.fecha));
+                }
+                });
+                
+                const fechasOrdenadas = Array.from(todasLasFechas).sort();
+                
+                const entrenamientosEsteMes = fechasOrdenadas.filter(f => {
+                const fecha = new Date(f);
+                return fecha >= inicioMes;
+                }).length;
+                
+                const entrenamientosMesPasado = fechasOrdenadas.filter(f => {
+                const fecha = new Date(f);
+                return fecha >= inicioMesPasado && fecha <= finMesPasado;
+                }).length;
+                
+                let rachaActual = 0;
+                let rachaMasLarga = 0;
+                let protectoresDisponibles = 0;
+                let ultimaSemana = null;
+                
+                if (fechasOrdenadas.length > 0) {
+                const fechasDesc = [...fechasOrdenadas].reverse();
+                let ultimaFecha = new Date(fechasDesc[0]);
+                const hoyFecha = new Date(hoy.toISOString().split('T')[0]);
+                
+                const diffDias = Math.floor((hoyFecha - ultimaFecha) / (1000 * 60 * 60 * 24));
+                
+                if (diffDias <= 1) {
+                    rachaActual = 1;
+                    
+                    for (let i = 1; i < fechasDesc.length; i++) {
+                    const fechaActual = new Date(fechasDesc[i]);
+                    const fechaAnterior = new Date(fechasDesc[i - 1]);
+                    const diff = Math.floor((fechaAnterior - fechaActual) / (1000 * 60 * 60 * 24));
+                    
+                    const semanaActual = Math.floor(fechaActual.getTime() / (7 * 24 * 60 * 60 * 1000));
+                    if (ultimaSemana !== semanaActual) {
+                        protectoresDisponibles = 2;
+                        ultimaSemana = semanaActual;
+                    }
+                    
+                    if (diff === 1) {
+                        rachaActual++;
+                    } else if (diff <= 3 && protectoresDisponibles > 0) {
+                        rachaActual++;
+                        protectoresDisponibles--;
+                    } else {
+                        break;
+                    }
+                    }
+                }
+                }
+                
+                protectoresDisponibles = 0;
+                ultimaSemana = null;
+                let rachaTemp = 0;
+                
+                for (let i = 0; i < fechasOrdenadas.length; i++) {
+                if (i === 0) {
+                    rachaTemp = 1;
+                    continue;
+                }
+                
+                const fechaActual = new Date(fechasOrdenadas[i]);
+                const fechaAnterior = new Date(fechasOrdenadas[i - 1]);
+                const diff = Math.floor((fechaActual - fechaAnterior) / (1000 * 60 * 60 * 24));
+                
+                const semanaActual = Math.floor(fechaActual.getTime() / (7 * 24 * 60 * 60 * 1000));
+                if (ultimaSemana !== semanaActual) {
+                    protectoresDisponibles = 2;
+                    ultimaSemana = semanaActual;
+                }
+                
+                if (diff === 1) {
+                    rachaTemp++;
+                } else if (diff <= 3 && protectoresDisponibles > 0) {
+                    rachaTemp++;
+                    protectoresDisponibles--;
+                } else {
+                    if (rachaTemp > rachaMasLarga) rachaMasLarga = rachaTemp;
+                    rachaTemp = 1;
+                    protectoresDisponibles = 2;
+                }
+                }
+                
+                if (rachaTemp > rachaMasLarga) rachaMasLarga = rachaTemp;
+                
+                const semanasMilisegundos = 7 * 24 * 60 * 60 * 1000;
+                const totalDias = fechasOrdenadas.length > 0 
+                ? Math.max(1, Math.floor((hoy - new Date(fechasOrdenadas[0])) / semanasMilisegundos))
+                : 1;
+                const promedioSemana = (fechasOrdenadas.length / totalDias).toFixed(1);
+                
+                let totalRIR = 0;
+                let countRIR = 0;
+                Object.keys(registros).forEach(dia => {
+                if (registros[dia]) {
+                    registros[dia].forEach(reg => {
+                    if (reg.rir && !isNaN(parseInt(reg.rir))) {
+                        totalRIR += parseInt(reg.rir);
+                        countRIR++;
+                    }
+                    });
+                }
+                });
+                const promedioRIR = countRIR > 0 ? (totalRIR / countRIR).toFixed(1) : 'N/A';
+                
+                return {
+                totalEntrenamientos: fechasOrdenadas.length,
+                entrenamientosEsteMes,
+                entrenamientosMesPasado,
+                rachaActual,
+                rachaMasLarga,
+                promedioSemana,
+                promedioRIR
+                };
+            };
+
+            const importarCSV = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                try {
+                    const csv = event.target.result;
+                    const lineas = csv.split('\n').filter(l => l.trim());
+                    
+                    if (lineas.length < 2) {
+                    setMensajeImport({ tipo: 'error', texto: 'El archivo CSV está vacío' });
+                    return;
+                    }
+
+                    const nuevosRegistros = {};
+                    
+                    for (let i = 1; i < lineas.length; i++) {
+                    const linea = lineas[i].split(',');
+                    if (linea.length < 7) continue;
+
+                    const [nombreDia, fecha, ejercicio, series, reps, peso, rir] = linea;
+                    const dia = obtenerDiaDesdeNombre(nombreDia.trim());
+                    
+                    if (!dia) continue;
+                    
+                    if (!nuevosRegistros[dia]) nuevosRegistros[dia] = [];
+
+                    const sessionId = `${fecha.trim()}-imported-${i}`;
+                    
+                    nuevosRegistros[dia].push({
+                        id: Date.now() + Math.random() + i,
+                        sessionId,
+                        fecha: fecha.trim(),
+                        ejercicio: ejercicio.trim(),
+                        series: parseInt(series) || 0,
+                        reps: parseInt(reps) || 0,
+                        peso: parseFloat(peso) || 0,
+                        rir: rir ? rir.trim() : ''
+                    });
+                    }
+
+                    setRegistros(nuevosRegistros);
+                    setMensajeImport({ tipo: 'exito', texto: `${lineas.length - 1} registros importados correctamente` });
+                    setTimeout(() => setMensajeImport(null), 3000);
+                } catch (error) {
+                    setMensajeImport({ tipo: 'error', texto: 'Error al procesar el archivo CSV' });
+                    setTimeout(() => setMensajeImport(null), 3000);
+                }
+                };
+
+                reader.readAsText(file);
+                e.target.value = '';
+            };
+
+            const agregarSesionCompleta = (dia) => {
+                const hoy = new Date();
+                const fecha = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+                const nuevosRegistros = { ...registros };
+                
+                if (!nuevosRegistros[dia]) nuevosRegistros[dia] = [];
+                
+                const sessionId = `${fecha}-${Date.now()}`;
+                
+                dias[dia].ejercicios.forEach(ejercicio => {
+                nuevosRegistros[dia].push({
+                    id: Date.now() + Math.random(),
+                    sessionId,
+                    fecha,
+                    ejercicio,
+                    series: 3,
+                    reps: 8,
+                    peso: 0,
+                    rir: ''
+                });
+                });
+                
+                setRegistros(nuevosRegistros);
+                setUltimaSesionAgregada(sessionId);
+                setSesionesExpandidas({...sesionesExpandidas, [sessionId]: true});
+                
+                setTimeout(() => setUltimaSesionAgregada(null), 3000);
+            };
+
+            const actualizarFechaSesion = (dia, sessionId, nuevaFecha) => {
+                const nuevosRegistros = { ...registros };
+                nuevosRegistros[dia] = nuevosRegistros[dia].map(reg => 
+                reg.sessionId === sessionId ? { ...reg, fecha: nuevaFecha } : reg
+                );
+                setRegistros(nuevosRegistros);
+            };
+
+            const actualizarRegistro = (dia, id, campo, valor) => {
+                const nuevosRegistros = { ...registros };
+                const index = nuevosRegistros[dia].findIndex(r => r.id === id);
+                if (index !== -1) {
+                nuevosRegistros[dia][index][campo] = valor;
+                setRegistros(nuevosRegistros);
+                }
+            };
+
+            const eliminarRegistro = (dia, id) => {
+                const nuevosRegistros = { ...registros };
+                nuevosRegistros[dia] = nuevosRegistros[dia].filter(r => r.id !== id);
+                setRegistros(nuevosRegistros);
+            };
+
+            const calcularVolumen = (registro) => {
+                return registro.series * registro.reps * registro.peso;
+            };
+
+            const calcularVolumenSesion = (ejercicios) => {
+                return ejercicios.reduce((total, reg) => total + calcularVolumen(reg), 0);
+            };
+
+            const obtenerProgresionPorDias = () => {
+                const datos = {};
+                
+                Object.keys(diasSeleccionados).forEach(dia => {
+                if (!diasSeleccionados[dia] || !registros[dia]) return;
+                
+                dias[dia].ejercicios.forEach(ejercicio => {
+                    if (!datos[ejercicio]) datos[ejercicio] = [];
+                    
+                    registros[dia]
+                    .filter(r => r.ejercicio === ejercicio)
+                    .forEach(r => {
+                        datos[ejercicio].push({
+                        fecha: r.fecha,
+                        peso: r.peso,
+                        reps: r.reps,
+                        dia: dia
+                        });
+                    });
+                });
+                });
+                
+                Object.keys(datos).forEach(ejercicio => {
+                datos[ejercicio].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+                });
+                
+                return datos;
+            };
+
+            const obtenerVolumenPorDias = () => {
+                const datos = {};
+                
+                Object.keys(diasSeleccionados).forEach(dia => {
+                if (!diasSeleccionados[dia] || !registros[dia]) return;
+                
+                const sesiones = agruparPorSesion(registros[dia]);
+                sesiones.forEach(sesion => {
+                    if (!datos[dia]) datos[dia] = [];
+                    datos[dia].push({
+                    fecha: sesion.fecha,
+                    volumen: calcularVolumenSesion(sesion.ejercicios)
+                    });
+                });
+                });
+                
+                Object.keys(datos).forEach(dia => {
+                datos[dia].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+                });
+                
+                return datos;
+            };
+
+            const agruparPorSesion = (registrosDia) => {
+                if (!registrosDia) return [];
+                const sesiones = {};
+                registrosDia.forEach(reg => {
+                const key = reg.sessionId || reg.fecha;
+                if (!sesiones[key]) {
+                    sesiones[key] = {
+                    fecha: reg.fecha,
+                    sessionId: key,
+                    ejercicios: []
+                    };
+                }
+                sesiones[key].ejercicios.push(reg);
+                });
+                return Object.values(sesiones).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            };
+
+            const toggleSesion = (sessionId) => {
+                setSesionesExpandidas({
+                ...sesionesExpandidas,
+                [sessionId]: !sesionesExpandidas[sessionId]
+                });
+            };
+
+            const agregarEjercicio = (dia) => {
+                if (!nuevoEjercicio.trim()) return;
+                const nuevosDias = { ...dias };
+                nuevosDias[dia].ejercicios.push(nuevoEjercicio.trim());
+                setDias(nuevosDias);
+                setNuevoEjercicio('');
+            };
+
+            const eliminarEjercicio = (dia, index) => {
+                const nuevosDias = { ...dias };
+                nuevosDias[dia].ejercicios.splice(index, 1);
+                setDias(nuevosDias);
+            };
+
+            const moverEjercicio = (dia, index, direccion) => {
+                const nuevosDias = { ...dias };
+                const ejercicios = [...nuevosDias[dia].ejercicios];
+                const newIndex = index + direccion;
+                
+                if (newIndex >= 0 && newIndex < ejercicios.length) {
+                [ejercicios[index], ejercicios[newIndex]] = [ejercicios[newIndex], ejercicios[index]];
+                nuevosDias[dia].ejercicios = ejercicios;
+                setDias(nuevosDias);
+                }
+            };
+
+            const exportarCSV = () => {
+                let csv = 'Día,Fecha,Ejercicio,Series,Reps,Peso,RIR,Volumen\n';
+                
+                Object.keys(registros).forEach(dia => {
+                if (registros[dia]) {
+                    registros[dia].forEach(reg => {
+                    csv += `${dias[dia].nombre},${reg.fecha},${reg.ejercicio},${reg.series},${reg.reps},${reg.peso},${reg.rir || ''},${calcularVolumen(reg)}\n`;
+                    });
+                }
+                });
+                
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'registro_entrenamiento.csv';
+                a.click();
+            };
+
+            const bgPrimary = temaOscuro ? 'bg-gray-900' : 'bg-gray-50';
+            const bgSecundary = temaOscuro ? 'bg-gray-800' : 'bg-white';
+            const textPrimary = temaOscuro ? 'text-gray-100' : 'text-gray-800';
+            const textSecundary = temaOscuro ? 'text-gray-300' : 'text-gray-600';
+            const border = temaOscuro ? 'border-gray-700' : 'border-gray-200';
+            const hover = temaOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
+            const inputBg = temaOscuro ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+
+            return (
+                <div className={`min-h-screen ${bgPrimary} p-4`}>
+                <div className="max-w-7xl mx-auto">
+                    <div className={`${bgSecundary} rounded-lg shadow-lg p-6 mb-6`}>
+                    <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+                        <h1 className={`text-3xl font-bold ${textPrimary}`}>Registro Gym</h1>
+                        <div className="flex gap-2 flex-wrap">
+                        <button
+                            onClick={() => setVistaActiva('estadisticas')}
+                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
+                            title="Estadísticas"
+                        >
+                            🏆
+                        </button>
+                        <button
+                            onClick={() => setVistaActiva('ajustes')}
+                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
+                            title="Ajustes"
+                        >
+                            ⚙️
+                        </button>
+                        <button
+                            onClick={() => setTemaOscuro(!temaOscuro)}
+                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
+                        >
+                            {temaOscuro ? '☀️' : '🌙'}
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={importarCSV}
+                            accept=".csv"
+                            style={{ display: 'none' }}
+                        />
+                        <button
+                            onClick={() => fileInputRef.current.click()}
+                            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+                        >
+                            ⬆️ CSV
+                        </button>
+                        <button
+                            onClick={exportarCSV}
+                            className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition text-sm"
+                        >
+                            ⬇️ CSV
+                        </button>
+                        </div>
+                    </div>
+
+                    {mensajeImport && (
+                        <div className={`mb-4 p-4 rounded-lg ${
+                        mensajeImport.tipo === 'exito' 
+                            ? 'bg-green-100 text-green-800 border border-green-300' 
+                            : 'bg-red-100 text-red-800 border border-red-300'
+                        }`}>
+                        {mensajeImport.texto}
+                        </div>
+                    )}
+
+                    <div className="flex gap-2 mb-6 overflow-x-auto">
+                        {['registro', 'progresion', 'volumen'].map(vista => (
+                        <button
+                            key={vista}
+                            onClick={() => setVistaActiva(vista)}
+                            className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${
+                            vistaActiva === vista
+                                ? 'bg-blue-600 text-white'
+                                : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
+                            }`}
+                        >
+                            {vista === 'registro' && 'Registro'}
+                            {vista === 'progresion' && '📈 Progresión'}
+                            {vista === 'volumen' && '📊 Volumen'}
+                        </button>
+                        ))}
+                    </div>
+
+                    {vistaActiva === 'registro' && (
+                        <div>
+                        <div className={`mb-6 p-4 border ${border} rounded-lg`}>
+                            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                            <h3 className={`font-semibold ${textPrimary} flex items-center gap-2`}>
+                                ⏱️ Temporizador
+                            </h3>
+                            <button
+                                onClick={() => setMostrarConfigTimer(!mostrarConfigTimer)}
+                                className={`text-sm ${textSecundary} hover:opacity-70`}
+                            >
+                                {mostrarConfigTimer ? 'Ocultar' : 'Config'}
+                            </button>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 flex-wrap">
+                            <div className={`text-4xl font-bold ${textPrimary}`}>
+                                {formatearTiempo(tiempoRestante)}
+                            </div>
+                            
+                            <div className="flex gap-2">
+                                {timerActivo ? (
+                                <button
+                                    onClick={pausarTimer}
+                                    className="bg-yellow-600 text-white px-3 py-2 rounded-lg hover:bg-yellow-700 transition"
+                                >
+                                    ⏸️
+                                </button>
+                                ) : (
+                                <button
+                                    onClick={() => setTimerActivo(true)}
+                                    className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition"
+                                >
+                                    ▶️
+                                </button>
+                                )}
+                                
+                                <button
+                                onClick={reiniciarTimer}
+                                className="bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 transition"
+                                >
+                                🔄
+                                </button>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                                {tiemposGuardados.map((tiempo, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => iniciarTimer(tiempo)}
+                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+                                >
+                                    {formatearTiempo(tiempo)}
+                                </button>
+                                ))}
+                            </div>
+                            </div>
+                            
+                            {mostrarConfigTimer && (
+                            <div className={`mt-4 pt-4 border-t ${border}`}>
+                                <p className={`text-sm ${textSecundary} mb-3`}>
+                                Tiempos guardados ({tiemposGuardados.length}/2)
+                                </p>
+                                <div className="flex gap-2 items-center flex-wrap">
+                                {tiemposGuardados.map((tiempo, idx) => (
+                                    <div key={idx} className="flex items-center gap-1 bg-gray-200 rounded px-2 py-1">
+                                    <span className="text-sm text-gray-800">{tiempo}s</span>
+                                    <button
+                                        onClick={() => eliminarTiempoGuardado(idx)}
+                                        className="p-1 text-red-600 hover:text-red-800"
+                                    >
+                                        ❌
+                                    </button>
+                                    </div>
+                                ))}
+                                
+                                {tiemposGuardados.length < 2 && (
+                                    <div className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        value={tiempoPersonalizado}
+                                        onChange={(e) => setTiempoPersonalizado(e.target.value)}
+                                        placeholder="90"
+                                        className={`border ${border} rounded px-2 py-1 w-20 ${inputBg}`}
+                                        min="1"
+                                    />
+                                    <button
+                                        onClick={agregarTiempoGuardado}
+                                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
+                                    >
+                                        +
+                                    </button>
+                                    </div>
+                                )}
+                                </div>
+                            </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                            {Object.keys(dias).map(dia => (
+                            <button
+                                key={dia}
+                                onClick={() => setDiaActivo(dia)}
+                                className={`px-4 py-2 rounded-lg whitespace-nowrap transition ${
+                                diaActivo === dia
+                                    ? 'bg-blue-600 text-white'
+                                    : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
+                                }`}
+                            >
+                                {dias[dia].nombre}
+                            </button>
+                            ))}
+                        </div>
+
+                        <div className="mb-4">
+                            <button
+                            onClick={() => agregarSesionCompleta(diaActivo)}
+                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                            >
+                            ➕ Agregar Sesión del Día
+                            </button>
+                        </div>
+
+                        {(() => {
+                            const sesiones = agruparPorSesion(registros[diaActivo]);
+                            const sesionesRecientes = sesiones.slice(0, 4);
+                            const sesionesArchivadas = sesiones.slice(4);
+
+                            return (
+                            <>
+                                <div className="space-y-4">
+                                {sesionesRecientes.map((sesion) => {
+                                    const isExpanded = sesionesExpandidas[sesion.sessionId] !== false;
+                                    const isNueva = ultimaSesionAgregada === sesion.sessionId;
+                                    
+                                    return (
+                                    <div key={sesion.sessionId} className={`border ${border} rounded-lg overflow-hidden ${isNueva ? 'ring-2 ring-green-500' : ''}`}>
+                                        <div
+                                        className={`flex items-center justify-between p-4 cursor-pointer ${hover}`}
+                                        onClick={(e) => {
+                                            if (e.target.type !== 'date') {
+                                            toggleSesion(sesion.sessionId);
+                                            }
+                                        }}
+                                        >
+                                        <div className="flex items-center gap-3">
+                                            <span>{isExpanded ? '🔽' : '▶️'}</span>
+                                            <div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                type="date"
+                                                value={sesion.fecha}
+                                                onChange={(e) => {
+                                                    e.stopPropagation();
+                                                    actualizarFechaSesion(diaActivo, sesion.sessionId, e.target.value);
+                                                }}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className={`font-semibold ${inputBg} border ${border} rounded px-2 py-1`}
+                                                />
+                                                {isNueva && (
+                                                <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                                    NUEVA
+                                                </span>
+                                                )}
+                                            </div>
+                                            <span className={`text-sm ${textSecundary}`}>
+                                                Vol: {calcularVolumenSesion(sesion.ejercicios).toFixed(1)} kg
+                                            </span>
+                                            </div>
+                                        </div>
+                                        <span className={`text-sm ${textSecundary}`}>
+                                            {sesion.ejercicios.length} ej
+                                        </span>
+                                        </div>
+                                        
+                                        {isExpanded && (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                            <thead>
+                                                <tr className={temaOscuro ? 'bg-gray-700' : 'bg-gray-100'}>
+                                                <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>Ejercicio</th>
+                                                <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>S</th>
+                                                <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>R</th>
+                                                <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>Kg</th>
+                                                <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>RIR</th>
+                                                <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>Vol</th>
+                                                <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {sesion.ejercicios.map((registro) => (
+                                                <tr key={registro.id} className={`border-b ${border}`}>
+                                                    <td className={`px-2 py-2 ${textSecundary} text-xs`}>
+                                                    {registro.ejercicio}
+                                                    </td>
+                                                    <td className="px-2 py-2">
+                                                    <input
+                                                        type="number"
+                                                        value={registro.series}
+                                                        onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'series', parseInt(e.target.value) || 0)}
+                                                        className={`border ${border} rounded px-1 py-1 w-12 ${inputBg} text-sm`}
+                                                        min="0"
+                                                    />
+                                                    </td>
+                                                    <td className="px-2 py-2">
+                                                    <input
+                                                        type="number"
+                                                        value={registro.reps}
+                                                        onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'reps', parseInt(e.target.value) || 0)}
+                                                        className={`border ${border} rounded px-1 py-1 w-12 ${inputBg} text-sm`}
+                                                        min="0"
+                                                    />
+                                                    </td>
+                                                    <td className="px-2 py-2">
+                                                    <input
+                                                        type="number"
+                                                        value={registro.peso}
+                                                        onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'peso', parseFloat(e.target.value) || 0)}
+                                                        className={`border ${border} rounded px-1 py-1 w-16 ${inputBg} text-sm`}
+                                                        min="0"
+                                                        step="0.5"
+                                                    />
+                                                    </td>
+                                                    <td className="px-2 py-2">
+                                                    <input
+                                                        type="text"
+                                                        value={registro.rir}
+                                                        onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'rir', e.target.value)}
+                                                        className={`border ${border} rounded px-1 py-1 w-10 ${inputBg} text-sm`}
+                                                        placeholder="0"
+                                                    />
+                                                    </td>
+                                                    <td className={`px-2 py-2 font-semibold ${textPrimary} text-xs`}>
+                                                    {calcularVolumen(registro).toFixed(0)}
+                                                    </td>
+                                                    <td className="px-2 py-2">
+                                                    <button
+                                                        onClick={() => eliminarRegistro(diaActivo, registro.id)}
+                                                        className="text-red-600 hover:text-red-800 transition"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                    </td>
+                                                </tr>
+                                                ))}
+                                            </tbody>
+                                            </table>
+                                        </div>
+                                        )}
+                                    </div>
+                                    );
+                                })}
+                                
+                                {sesionesRecientes.length === 0 && (
+                                    <div className={`text-center py-8 ${textSecundary}`}>
+                                    No hay registros. Agrega tu primera sesión.
+                                    </div>
+                                )}
+                                </div>
+
+                                {sesionesArchivadas.length > 0 && (
+                                <div className="mt-6">
+                                    <button
+                                    onClick={() => setArchivoExpandido({...archivoExpandido, [diaActivo]: !archivoExpandido[diaActivo]})}
+                                    className={`flex items-center gap-2 ${textPrimary} hover:opacity-80 transition font-semibold`}
+                                    >
+                                    {archivoExpandido[diaActivo] ? '🔽' : '▶️'}
+                                    Historial ({sesionesArchivadas.length} antiguas)
+                                    </button>
+                                    
+                                    {archivoExpandido[diaActivo] && (
+                                    <div className="space-y-4 mt-4">
+                                        {sesionesArchivadas.map((sesion) => (
+                                        <div key={sesion.sessionId} className={`border ${border} rounded-lg p-4`}>
+                                            <div className="flex items-center justify-between mb-2">
+                                            <span className={`font-semibold ${textPrimary}`}>{sesion.fecha}</span>
+                                            <span className={`text-sm ${textSecundary}`}>
+                                                Vol: {calcularVolumenSesion(sesion.ejercicios).toFixed(1)} kg
+                                            </span>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-1 text-sm">
+                                            {sesion.ejercicios.map((reg) => (
+                                                <div key={reg.id} className={textSecundary}>
+                                                {reg.ejercicio}: {reg.series}×{reg.reps} @ {reg.peso}kg
+                                                </div>
+                                            ))}
+                                            </div>
+                                        </div>
+                                        ))}
+                                    </div>
+                                    )}
+                                </div>
+                                )}
+                            </>
+                            );
+                        })()}
+                        </div>
+                    )}
+
+                    {vistaActiva === 'estadisticas' && (
+                        <div>
+                        <h2 className={`text-2xl font-bold mb-6 ${textPrimary}`}>📊 Estadísticas</h2>
+                        
+                        {(() => {
+                            const stats = calcularEstadisticas();
                             
                             return (
-                              <div key={sesion.sessionId} className={`border ${border} rounded-lg overflow-hidden ${isNueva ? 'ring-2 ring-green-500' : ''}`}>
-                                <div
-                                  className={`flex items-center justify-between p-4 cursor-pointer ${hover}`}
-                                  onClick={(e) => {
-                                    if (e.target.type !== 'date') {
-                                      toggleSesion(sesion.sessionId);
-                                    }
-                                  }}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    {isExpanded ? <ChevronUp size={20} className={textPrimary} /> : <ChevronDown size={20} className={textPrimary} />}
-                                    <div>
-                                      <div className="flex items-center gap-2">
-                                        <input
-                                          type="date"
-                                          value={sesion.fecha}
-                                          onChange={(e) => {
-                                            e.stopPropagation();
-                                            actualizarFechaSesion(diaActivo, sesion.sessionId, e.target.value);
-                                          }}
-                                          onClick={(e) => e.stopPropagation()}
-                                          className={`font-semibold ${inputBg} border ${border} rounded px-2 py-1`}
-                                        />
-                                        {isNueva && (
-                                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                                            NUEVA
-                                          </span>
-                                        )}
-                                      </div>
-                                      <span className={`text-sm ${textSecundary}`}>
-                                        Volumen total: {calcularVolumenSesion(sesion.ejercicios).toFixed(1)} kg
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <span className={`text-sm ${textSecundary}`}>
-                                    {sesion.ejercicios.length} ejercicios
-                                  </span>
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div className={`border ${border} rounded-lg p-4`}>
+                                    <h3 className={`text-sm ${textSecundary} mb-2`}>Total Entrenamientos</h3>
+                                    <p className={`text-3xl font-bold ${textPrimary}`}>{stats.totalEntrenamientos}</p>
                                 </div>
                                 
-                                {isExpanded && (
-                                  <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                      <thead>
-                                        <tr className={temaOscuro ? 'bg-gray-700' : 'bg-gray-100'}>
-                                          <th className={`px-4 py-3 text-left text-sm font-semibold ${textPrimary}`}>Ejercicio</th>
-                                          <th className={`px-4 py-3 text-left text-sm font-semibold ${textPrimary}`}>Series</th>
-                                          <th className={`px-4 py-3 text-left text-sm font-semibold ${textPrimary}`}>Reps</th>
-                                          <th className={`px-4 py-3 text-left text-sm font-semibold ${textPrimary}`}>Peso</th>
-                                          <th className={`px-4 py-3 text-left text-sm font-semibold ${textPrimary}`}>RIR</th>
-                                          <th className={`px-4 py-3 text-left text-sm font-semibold ${textPrimary}`}>Vol</th>
-                                          <th className={`px-4 py-3 text-left text-sm font-semibold ${textPrimary}`}></th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {sesion.ejercicios.map((registro) => (
-                                          <tr key={registro.id} className={`border-b ${border}`}>
-                                            <td className={`px-4 py-3 ${textSecundary} text-sm`}>
-                                              {registro.ejercicio}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                              <input
-                                                type="number"
-                                                value={registro.series}
-                                                onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'series', parseInt(e.target.value) || 0)}
-                                                className={`border ${border} rounded px-2 py-1 w-16 ${inputBg}`}
-                                                min="0"
-                                              />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                              <input
-                                                type="number"
-                                                value={registro.reps}
-                                                onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'reps', parseInt(e.target.value) || 0)}
-                                                className={`border ${border} rounded px-2 py-1 w-16 ${inputBg}`}
-                                                min="0"
-                                              />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                              <input
-                                                type="number"
-                                                value={registro.peso}
-                                                onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'peso', parseFloat(e.target.value) || 0)}
-                                                className={`border ${border} rounded px-2 py-1 w-20 ${inputBg}`}
-                                                min="0"
-                                                step="0.5"
-                                              />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                              <input
-                                                type="text"
-                                                value={registro.rir}
-                                                onChange={(e) => actualizarRegistro(diaActivo, registro.id, 'rir', e.target.value)}
-                                                className={`border ${border} rounded px-2 py-1 w-12 ${inputBg}`}
-                                                placeholder="0-3"
-                                              />
-                                            </td>
-                                            <td className={`px-4 py-3 font-semibold ${textPrimary} text-sm`}>
-                                              {calcularVolumen(registro).toFixed(0)}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                              <button
-                                                onClick={() => eliminarRegistro(diaActivo, registro.id)}
-                                                className="text-red-600 hover:text-red-800 transition"
-                                              >
-                                                <Trash2 size={16} />
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                )}
-                              </div>
+                                <div className={`border ${border} rounded-lg p-4`}>
+                                    <h3 className={`text-sm ${textSecundary} mb-2`}>Este Mes vs Anterior</h3>
+                                    <p className={`text-3xl font-bold ${textPrimary}`}>
+                                    {stats.entrenamientosEsteMes} / {stats.entrenamientosMesPasado}
+                                    </p>
+                                </div>
+                                
+                                <div className={`border ${border} rounded-lg p-4`}>
+                                    <h3 className={`text-sm ${textSecundary} mb-2`}>Racha Actual 🛡️</h3>
+                                    <p className={`text-3xl font-bold ${textPrimary}`}>{stats.rachaActual} días</p>
+                                </div>
+                                
+                                <div className={`border ${border} rounded-lg p-4`}>
+                                    <h3 className={`text-sm ${textSecundary} mb-2`}>Racha Más Larga</h3>
+                                    <p className={`text-3xl font-bold ${textPrimary}`}>{stats.rachaMasLarga} días</p>
+                                </div>
+                                
+                                <div className={`border ${border} rounded-lg p-4`}>
+                                    <h3 className={`text-sm ${textSecundary} mb-2`}>Promedio Semanal</h3>
+                                    <p className={`text-3xl font-bold ${textPrimary}`}>{stats.promedioSemana}</p>
+                                </div>
+                                
+                                <div className={`border ${border} rounded-lg p-4`}>
+                                    <h3 className={`text-sm ${textSecundary} mb-2`}>Promedio RIR</h3>
+                                    <p className={`text-3xl font-bold ${textPrimary}`}>{stats.promedioRIR}</p>
+                                </div>
+                                </div>
+                                
+                                <div className={`p-4 border ${border} rounded-lg ${temaOscuro ? 'bg-gray-700' : 'bg-blue-50'}`}>
+                                <p className={`text-sm ${textSecundary}`}>
+                                    <strong>🛡️ Protección:</strong> 2 protectores por semana (no acumulables). Puedes descansar hasta 3 días sin romper racha.
+                                </p>
+                                </div>
+                            </>
                             );
-                          })}
-                          
-                          {sesionesRecientes.length === 0 && (
-                            <div className={`text-center py-8 ${textSecundary}`}>
-                              No hay registros. Agrega tu primera sesión.
-                            </div>
-                          )}
+                        })()}
                         </div>
+                    )}
 
-                        {sesionesArchivadas.length > 0 && (
-                          <div className="mt-6">
-                            <button
-                              onClick={() => setArchivoExpandido({...archivoExpandido, [diaActivo]: !archivoExpandido[diaActivo]})}
-                              className={`flex items-center gap-2 ${textPrimary} hover:opacity-80 transition font-semibold`}
-                            >
-                              {archivoExpandido[diaActivo] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                              Historial ({sesionesArchivadas.length} sesiones antiguas)
-                            </button>
-                            
-                            {archivoExpandido[diaActivo] && (
-                              <div className="space-y-4 mt-4">
-                                {sesionesArchivadas.map((sesion) => (
-                                  <div key={sesion.sessionId} className={`border ${border} rounded-lg p-4`}>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <span className={`font-semibold ${textPrimary}`}>{sesion.fecha}</span>
-                                      <span className={`text-sm ${textSecundary}`}>
-                                        Vol: {calcularVolumenSesion(sesion.ejercicios).toFixed(1)} kg
-                                      </span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                      {sesion.ejercicios.map((reg) => (
-                                        <div key={reg.id} className={textSecundary}>
-                                          {reg.ejercicio}: {reg.series}×{reg.reps} @ {reg.peso}kg
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                </>
-              )}
-
-              {vistaActiva === 'progresion' && (
-                <div>
-                  <h2 className={`text-2xl font-bold mb-4 ${textPrimary}`}>Progresión por Ejercicio</h2>
-                  
-                  <div className="mb-6">
-                    <label className={`block mb-3 font-semibold ${textPrimary}`}>Selecciona días para comparar:</label>
-                    <div className="flex flex-wrap gap-3">
-                      {Object.keys(dias).map(dia => (
-                        <label key={dia} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={diasSeleccionados[dia]}
-                            onChange={(e) => setDiasSeleccionados({...diasSeleccionados, [dia]: e.target.checked})}
-                            className="w-4 h-4"
-                          />
-                          <span className={textPrimary} style={{ color: coloresDias[dia] }}>
-                            {dias[dia].nombre}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {(() => {
-                    const progresion = obtenerProgresionPorDias();
-                    const ejerciciosConDatos = Object.keys(progresion).filter(ej => progresion[ej].length > 0);
-                    
-                    if (ejerciciosConDatos.length === 0) {
-                      return (
-                        <div className={`text-center py-12 ${textSecundary}`}>
-                          No hay datos para los días seleccionados.
-                        </div>
-                      );
-                    }
-
-                    const todasLasFechas = [...new Set(
-                      ejerciciosConDatos.flatMap(ej => progresion[ej].map(d => d.fecha))
-                    )].sort();
-
-                    const maxPeso = Math.max(...ejerciciosConDatos.flatMap(ej => progresion[ej].map(d => d.peso)));
-
-                    return (
-                      <div className="space-y-8">
-                        {ejerciciosConDatos.map(ejercicio => (
-                          <div key={ejercicio} className={`border ${border} rounded-lg p-6`}>
-                            <h3 className={`font-semibold text-lg mb-4 ${textPrimary}`}>{ejercicio}</h3>
-                            
-                            <div className="relative h-64 mb-8">
-                              <svg className="w-full h-full" viewBox="0 0 100 120" preserveAspectRatio="none">
-                                <defs>
-                                  <style>
-                                    {`.label-text { font-size: 3px; }`}
-                                  </style>
-                                </defs>
-                                
-                                {todasLasFechas.map((fecha, idx) => {
-                                  const x = (idx / Math.max(todasLasFechas.length - 1, 1)) * 100;
-                                  return (
-                                    <line
-                                      key={fecha}
-                                      x1={x}
-                                      y1="0"
-                                      x2={x}
-                                      y2="100"
-                                      stroke={temaOscuro ? '#374151' : '#E5E7EB'}
-                                      strokeWidth="0.5"
-                                      vectorEffect="non-scaling-stroke"
-                                    />
-                                  );
-                                })}
-                                
-                                {progresion[ejercicio].map((dato, idx, arr) => {
-                                  const x = (todasLasFechas.indexOf(dato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
-                                  const y = 100 - ((dato.peso / maxPeso) * 85);
-                                  
-                                  return (
-                                    <g key={idx}>
-                                      {idx < arr.length - 1 && (() => {
-                                        const nextDato = arr[idx + 1];
-                                        const nextX = (todasLasFechas.indexOf(nextDato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
-                                        const nextY = 100 - ((nextDato.peso / maxPeso) * 85);
-                                        
-                                        return (
-                                          <line
-                                            x1={x}
-                                            y1={y}
-                                            x2={nextX}
-                                            y2={nextY}
-                                            stroke={coloresDias[dato.dia]}
-                                            strokeWidth="2"
-                                            vectorEffect="non-scaling-stroke"
-                                          />
-                                        );
-                                      })()}
-                                      <circle
-                                        cx={x}
-                                        cy={y}
-                                        r="1.5"
-                                        fill={coloresDias[dato.dia]}
-                                        vectorEffect="non-scaling-stroke"
-                                      />
-                                      <text
-                                        x={x}
-                                        y={y - 3}
-                                        textAnchor="middle"
-                                        className="label-text"
-                                        fill={temaOscuro ? '#E5E7EB' : '#374151'}
-                                        style={{ fontSize: '3px', fontWeight: 'bold' }}
-                                      >
-                                        {dato.peso}kg
-                                      </text>
-                                      <text
-                                        x={x}
-                                        y="110"
-                                        textAnchor="middle"
-                                        className="label-text"
-                                        fill={temaOscuro ? '#9CA3AF' : '#6B7280'}
-                                        style={{ fontSize: '2.5px' }}
-                                      >
-                                        {dato.fecha.substring(5)}
-                                      </text>
-                                    </g>
-                                  );
-                                })}
-                              </svg>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-
-              {vistaActiva === 'volumen' && (
-                <div>
-                  <h2 className={`text-2xl font-bold mb-4 ${textPrimary}`}>Volumen por Sesión</h2>
-                  
-                  <div className="mb-6">
-                    <label className={`block mb-3 font-semibold ${textPrimary}`}>Selecciona días para comparar:</label>
-                    <div className="flex flex-wrap gap-3">
-                      {Object.keys(dias).map(dia => (
-                        <label key={dia} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={diasSeleccionados[dia]}
-                            onChange={(e) => setDiasSeleccionados({...diasSeleccionados, [dia]: e.target.checked})}
-                            className="w-4 h-4"
-                          />
-                          <span className={textPrimary} style={{ color: coloresDias[dia] }}>
-                            {dias[dia].nombre}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {(() => {
-                    const volumenPorDias = obtenerVolumenPorDias();
-                    const diasConDatos = Object.keys(volumenPorDias).filter(dia => volumenPorDias[dia].length > 0);
-                    
-                    if (diasConDatos.length === 0) {
-                      return (
-                        <div className={`text-center py-12 ${textSecundary}`}>
-                          No hay datos para los días seleccionados.
-                        </div>
-                      );
-                    }
-
-                    const todasLasFechas = [...new Set(
-                      diasConDatos.flatMap(dia => volumenPorDias[dia].map(d => d.fecha))
-                    )].sort();
-
-                    const maxVolumen = Math.max(...diasConDatos.flatMap(dia => volumenPorDias[dia].map(d => d.volumen)));
-
-                    return (
-                      <div className={`border ${border} rounded-lg p-6`}>
-                        <h3 className={`font-semibold text-lg mb-4 ${textPrimary}`}>Comparación de Volumen</h3>
+                    {vistaActiva === 'progresion' && (
+                        <div>
+                        <h2 className={`text-2xl font-bold mb-4 ${textPrimary}`}>📈 Progresión</h2>
                         
-                        <div className="relative h-80 mb-8">
-                          <svg className="w-full h-full" viewBox="0 0 100 120" preserveAspectRatio="none">
-                            <defs>
-                              <style>
-                                {`.label-text { font-size: 3px; }`}
-                              </style>
-                            </defs>
-                            
-                            {todasLasFechas.map((fecha, idx) => {
-                              const x = (idx / Math.max(todasLasFechas.length - 1, 1)) * 100;
-                              return (
-                                <line
-                                  key={fecha}
-                                  x1={x}
-                                  y1="0"
-                                  x2={x}
-                                  y2="100"
-                                  stroke={temaOscuro ? '#374151' : '#E5E7EB'}
-                                  strokeWidth="0.5"
-                                  vectorEffect="non-scaling-stroke"
+                        <div className="mb-6">
+                            <label className={`block mb-3 font-semibold ${textPrimary}`}>Días:</label>
+                            <div className="flex flex-wrap gap-3">
+                            {Object.keys(dias).map(dia => (
+                                <label key={dia} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={diasSeleccionados[dia]}
+                                    onChange={(e) => setDiasSeleccionados({...diasSeleccionados, [dia]: e.target.checked})}
+                                    className="w-4 h-4"
                                 />
-                              );
-                            })}
+                                <span className={textPrimary} style={{ color: coloresDias[dia] }}>
+                                    {dias[dia].nombre.split(' - ')[0]}
+                                </span>
+                                </label>
+                            ))}
+                            </div>
+                        </div>
+
+                        {(() => {
+                            const progresion = obtenerProgresionPorDias();
+                            const ejerciciosConDatos = Object.keys(progresion).filter(ej => progresion[ej].length > 0);
                             
-                            {diasConDatos.map(dia => {
-                              return volumenPorDias[dia].map((dato, idx, arr) => {
-                                const x = (todasLasFechas.indexOf(dato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
-                                const y = 100 - ((dato.volumen / maxVolumen) * 85);
+                            if (ejerciciosConDatos.length === 0) {
+                            return (
+                                <div className={`text-center py-12 ${textSecundary}`}>
+                                No hay datos.
+                                </div>
+                            );
+                            }
+
+                            const todasLasFechas = [...new Set(
+                            ejerciciosConDatos.flatMap(ej => progresion[ej].map(d => d.fecha))
+                            )].sort();
+
+                            const maxPeso = Math.max(...ejerciciosConDatos.flatMap(ej => progresion[ej].map(d => d.peso)));
+
+                            return (
+                            <div className="space-y-8">
+                                {ejerciciosConDatos.map(ejercicio => {
+                                const rm1 = obtener1RMPorEjercicio(ejercicio);
                                 
                                 return (
-                                  <g key={`${dia}-${idx}`}>
-                                    {idx < arr.length - 1 && (() => {
-                                      const nextDato = arr[idx + 1];
-                                      const nextX = (todasLasFechas.indexOf(nextDato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
-                                      const nextY = 100 - ((nextDato.volumen / maxVolumen) * 85);
-                                      
-                                      return (
-                                        <line
-                                          x1={x}
-                                          y1={y}
-                                          x2={nextX}
-                                          y2={nextY}
-                                          stroke={coloresDias[dia]}
-                                          strokeWidth="2"
-                                          vectorEffect="non-scaling-stroke"
-                                        />
-                                      );
-                                    })()}
-                                    <circle
-                                      cx={x}
-                                      cy={y}
-                                      r="1.5"
-                                      fill={coloresDias[dia]}
-                                      vectorEffect="non-scaling-stroke"
-                                    />
-                                    <text
-                                      x={x}
-                                      y={y - 3}
-                                      textAnchor="middle"
-                                      className="label-text"
-                                      fill={temaOscuro ? '#E5E7EB' : '#374151'}
-                                      style={{ fontSize: '3px', fontWeight: 'bold' }}
-                                    >
-                                      {Math.round(dato.volumen)}kg
-                                    </text>
-                                    <text
-                                      x={x}
-                                      y="110"
-                                      textAnchor="middle"
-                                      className="label-text"
-                                      fill={temaOscuro ? '#9CA3AF' : '#6B7280'}
-                                      style={{ fontSize: '2.5px' }}
-                                    >
-                                      {dato.fecha.substring(5)}
-                                    </text>
-                                  </g>
+                                    <div key={ejercicio} className={`border ${border} rounded-lg p-4`}>
+                                    <h3 className={`font-semibold text-base mb-3 ${textPrimary}`}>{ejercicio}</h3>
+                                    
+                                    <div className="relative h-48 mb-4">
+                                        <svg className="w-full h-full" viewBox="0 0 100 120" preserveAspectRatio="none">
+                                        {todasLasFechas.map((fecha, idx) => {
+                                            const x = (idx / Math.max(todasLasFechas.length - 1, 1)) * 100;
+                                            return (
+                                            <line
+                                                key={fecha}
+                                                x1={x}
+                                                y1="0"
+                                                x2={x}
+                                                y2="100"
+                                                stroke={temaOscuro ? '#374151' : '#E5E7EB'}
+                                                strokeWidth="0.5"
+                                                vectorEffect="non-scaling-stroke"
+                                            />
+                                            );
+                                        })}
+                                        
+                                        {progresion[ejercicio].map((dato, idx, arr) => {
+                                            const x = (todasLasFechas.indexOf(dato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
+                                            const y = 100 - ((dato.peso / maxPeso) * 85);
+                                            
+                                            return (
+                                            <g key={idx}>
+                                                {idx < arr.length - 1 && (() => {
+                                                const nextDato = arr[idx + 1];
+                                                const nextX = (todasLasFechas.indexOf(nextDato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
+                                                const nextY = 100 - ((nextDato.peso / maxPeso) * 85);
+                                                
+                                                return (
+                                                    <line
+                                                    x1={x}
+                                                    y1={y}
+                                                    x2={nextX}
+                                                    y2={nextY}
+                                                    stroke={coloresDias[dato.dia]}
+                                                    strokeWidth="2"
+                                                    vectorEffect="non-scaling-stroke"
+                                                    />
+                                                );
+                                                })()}
+                                                <circle
+                                                cx={x}
+                                                cy={y}
+                                                r="1.5"
+                                                fill={coloresDias[dato.dia]}
+                                                vectorEffect="non-scaling-stroke"
+                                                />
+                                                <text
+                                                x={x}
+                                                y={y - 3}
+                                                textAnchor="middle"
+                                                fill={temaOscuro ? '#E5E7EB' : '#374151'}
+                                                style={{ fontSize: '3px', fontWeight: 'bold' }}
+                                                >
+                                                {dato.peso}kg
+                                                </text>
+                                                <text
+                                                x={x}
+                                                y="110"
+                                                textAnchor="middle"
+                                                fill={temaOscuro ? '#9CA3AF' : '#6B7280'}
+                                                style={{ fontSize: '2.5px' }}
+                                                >
+                                                {dato.fecha.substring(5)}
+                                                </text>
+                                            </g>
+                                            );
+                                        })}
+                                        </svg>
+                                    </div>
+                                    
+                                    <div className={`p-3 ${temaOscuro ? 'bg-gray-700' : 'bg-blue-50'} rounded-lg`}>
+                                        <p className={`text-base font-semibold ${textPrimary}`}>
+                                        1RM: <span className="text-blue-600">{rm1 > 0 ? `${rm1} kg` : 'N/A'}</span>
+                                        </p>
+                                        <p className={`text-xs ${textSecundary}`}>Fórmula de Epley</p>
+                                    </div>
+                                    </div>
                                 );
-                              });
-                            })}
-                          </svg>
-                        </div>
-                        
-                        <div className="mt-6">
-                          <h4 className={`font-semibold mb-3 ${textPrimary}`}>Leyenda</h4>
-                          <div className="flex flex-wrap gap-4">
-                            {diasConDatos.map(dia => (
-                              <div key={dia} className="flex items-center gap-2">
-                                <div 
-                                  className="w-4 h-4 rounded"
-                                  style={{ backgroundColor: coloresDias[dia] }}
-                                />
-                                <span className={textSecundary}>{dias[dia].nombre}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-
-              {vistaActiva === 'ajustes' && (
-                <div>
-                  <h2 className={`text-2xl font-bold mb-6 ${textPrimary}`}>Configuración de Ejercicios</h2>
-                  
-                  <div className="space-y-6">
-                    {Object.keys(dias).map(dia => (
-                      <div key={dia} className={`border ${border} rounded-lg p-6`}>
-                        <h3 className={`font-semibold text-lg mb-4 ${textPrimary}`}>{dias[dia].nombre}</h3>
-                        
-                        <div className="space-y-2 mb-4">
-                          {dias[dia].ejercicios.map((ejercicio, idx) => (
-                            <div key={idx} className={`flex items-center gap-2 p-2 rounded ${hover}`}>
-                              <span className={`flex-1 ${textPrimary}`}>{ejercicio}</span>
-                              <button
-                                onClick={() => moverEjercicio(dia, idx, -1)}
-                                disabled={idx === 0}
-                                className={`p-1 rounded ${idx === 0 ? 'opacity-30' : 'hover:bg-blue-100'}`}
-                              >
-                                <ChevronUp size={16} />
-                              </button>
-                              <button
-                                onClick={() => moverEjercicio(dia, idx, 1)}
-                                disabled={idx === dias[dia].ejercicios.length - 1}
-                                className={`p-1 rounded ${idx === dias[dia].ejercicios.length - 1 ? 'opacity-30' : 'hover:bg-blue-100'}`}
-                              >
-                                <ChevronDown size={16} />
-                              </button>
-                              <button
-                                onClick={() => eliminarEjercicio(dia, idx)}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded"
-                              >
-                                <X size={16} />
-                              </button>
+                                })}
                             </div>
-                          ))}
+                            );
+                        })()}
                         </div>
-                        
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={editandoDia === dia ? nuevoEjercicio : ''}
-                            onChange={(e) => {
-                              setEditandoDia(dia);
-                              setNuevoEjercicio(e.target.value);
-                            }}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                agregarEjercicio(dia);
-                                setEditandoDia(null);
-                              }
-                            }}
-                            placeholder="Nuevo ejercicio..."
-                            className={`flex-1 border ${border} rounded px-3 py-2 ${inputBg}`}
-                          />
-                          <button
-                            onClick={() => {
-                              agregarEjercicio(dia);
-                              setEditandoDia(null);
-                            }}
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                          >
-                            <Plus size={20} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    };
+                    )}
 
-    ReactDOM.render(<GymTracker />, document.getElementById('root'));
-  </script>
+                    {vistaActiva === 'volumen' && (
+                        <div>
+                        <h2 className={`text-2xl font-bold mb-4 ${textPrimary}`}>📊 Volumen</h2>
+                        
+                        <div className="mb-6">
+                            <label className={`block mb-3 font-semibold ${textPrimary}`}>Días:</label>
+                            <div className="flex flex-wrap gap-3">
+                            {Object.keys(dias).map(dia => (
+                                <label key={dia} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={diasSeleccionados[dia]}
+                                    onChange={(e) => setDiasSeleccionados({...diasSeleccionados, [dia]: e.target.checked})}
+                                    className="w-4 h-4"
+                                />
+                                <span className={textPrimary} style={{ color: coloresDias[dia] }}>
+                                    {dias[dia].nombre.split(' - ')[0]}
+                                </span>
+                                </label>
+                            ))}
+                            </div>
+                        </div>
+
+                        {(() => {
+                            const volumenPorDias = obtenerVolumenPorDias();
+                            const diasConDatos = Object.keys(volumenPorDias).filter(dia => volumenPorDias[dia].length > 0);
+                            
+                            if (diasConDatos.length === 0) {
+                            return <div className={`text-center py-12 ${textSecundary}`}>No hay datos.</div>;
+                            }
+
+                            const todasLasFechas = [...new Set(
+                            diasConDatos.flatMap(dia => volumenPorDias[dia].map(d => d.fecha))
+                            )].sort();
+
+                            const maxVolumen = Math.max(...diasConDatos.flatMap(dia => volumenPorDias[dia].map(d => d.volumen)));
+
+                            return (
+                            <div className={`border ${border} rounded-lg p-4`}>
+                                <div className="relative h-64 mb-6">
+                                <svg className="w-full h-full" viewBox="0 0 100 120" preserveAspectRatio="none">
+                                    {todasLasFechas.map((fecha, idx) => {
+                                    const x = (idx / Math.max(todasLasFechas.length - 1, 1)) * 100;
+                                    return (
+                                        <line
+                                        key={fecha}
+                                        x1={x}
+                                        y1="0"
+                                        x2={x}
+                                        y2="100"
+                                        stroke={temaOscuro ? '#374151' : '#E5E7EB'}
+                                        strokeWidth="0.5"
+                                        vectorEffect="non-scaling-stroke"
+                                        />
+                                    );
+                                    })}
+                                    
+                                    {diasConDatos.map(dia => {
+                                    return volumenPorDias[dia].map((dato, idx, arr) => {
+                                        const x = (todasLasFechas.indexOf(dato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
+                                        const y = 100 - ((dato.volumen / maxVolumen) * 85);
+                                        
+                                        return (
+                                        <g key={`${dia}-${idx}`}>
+                                            {idx < arr.length - 1 && (() => {
+                                            const nextDato = arr[idx + 1];
+                                            const nextX = (todasLasFechas.indexOf(nextDato.fecha) / Math.max(todasLasFechas.length - 1, 1)) * 100;
+                                            const nextY = 100 - ((nextDato.volumen / maxVolumen) * 85);
+                                            
+                                            return (
+                                                <line
+                                                x1={x}
+                                                y1={y}
+                                                x2={nextX}
+                                                y2={nextY}
+                                                stroke={coloresDias[dia]}
+                                                strokeWidth="2"
+                                                vectorEffect="non-scaling-stroke"
+                                                />
+                                            );
+                                            })()}
+                                            <circle
+                                            cx={x}
+                                            cy={y}
+                                            r="1.5"
+                                            fill={coloresDias[dia]}
+                                            vectorEffect="non-scaling-stroke"
+                                            />
+                                            <text
+                                            x={x}
+                                            y={y - 3}
+                                            textAnchor="middle"
+                                            fill={temaOscuro ? '#E5E7EB' : '#374151'}
+                                            style={{ fontSize: '3px', fontWeight: 'bold' }}
+                                            >
+                                            {Math.round(dato.volumen)}
+                                            </text>
+                                            <text
+                                            x={x}
+                                            y="110"
+                                            textAnchor="middle"
+                                            fill={temaOscuro ? '#9CA3AF' : '#6B7280'}
+                                            style={{ fontSize: '2.5px' }}
+                                            >
+                                            {dato.fecha.substring(5)}
+                                            </text>
+                                        </g>
+                                        );
+                                    });
+                                    })}
+                                </svg>
+                                </div>
+                                
+                                <div>
+                                <h4 className={`font-semibold mb-3 ${textPrimary}`}>Leyenda</h4>
+                                <div className="flex flex-wrap gap-3">
+                                    {diasConDatos.map(dia => (
+                                    <div key={dia} className="flex items-center gap-2">
+                                        <div 
+                                        className="w-4 h-4 rounded"
+                                        style={{ backgroundColor: coloresDias[dia] }}
+                                        />
+                                        <span className={`${textSecundary} text-sm`}>{dias[dia].nombre.split(' - ')[0]}</span>
+                                    </div>
+                                    ))}
+                                </div>
+                                </div>
+                            </div>
+                            );
+                        })()}
+                        </div>
+                    )}
+
+                    {vistaActiva === 'ajustes' && (
+                        <div>
+                        <h2 className={`text-2xl font-bold mb-6 ${textPrimary}`}>⚙️ Ajustes</h2>
+                        
+                        <div className="space-y-6">
+                            {Object.keys(dias).map(dia => (
+                            <div key={dia} className={`border ${border} rounded-lg p-4`}>
+                                <h3 className={`font-semibold text-base mb-3 ${textPrimary}`}>{dias[dia].nombre}</h3>
+                                
+                                <div className="space-y-2 mb-4">
+                                {dias[dia].ejercicios.map((ejercicio, idx) => (
+                                    <div key={idx} className={`flex items-center gap-2 p-2 rounded ${hover}`}>
+                                    <span className={`flex-1 text-sm ${textPrimary}`}>{ejercicio}</span>
+                                    <button
+                                        onClick={() => moverEjercicio(dia, idx, -1)}
+                                        disabled={idx === 0}
+                                        className={`p-1 ${idx === 0 ? 'opacity-30' : ''}`}
+                                    >
+                                        ⬆️
+                                    </button>
+                                    <button
+                                        onClick={() => moverEjercicio(dia, idx, 1)}
+                                        disabled={idx === dias[dia].ejercicios.length - 1}
+                                        className={`p-1 ${idx === dias[dia].ejercicios.length - 1 ? 'opacity-30' : ''}`}
+                                    >
+                                        ⬇️
+                                    </button>
+                                    <button
+                                        onClick={() => eliminarEjercicio(dia, idx)}
+                                        className="p-1 text-red-600 hover:text-red-800 transition"
+                                    >
+                                        🗑️
+                                    </button>
+                                    </div>
+                                ))}
+                                </div>
+                                
+                                <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={editandoDia === dia ? nuevoEjercicio : ''}
+                                    onChange={(e) => {
+                                    setEditandoDia(dia);
+                                    setNuevoEjercicio(e.target.value);
+                                    }}
+                                    onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        agregarEjercicio(dia);
+                                        setEditandoDia(null);
+                                    }
+                                    }}
+                                    placeholder="Nuevo ejercicio..."
+                                    className={`flex-1 border ${border} rounded px-3 py-2 ${inputBg} text-sm`}
+                                />
+                                <button
+                                    onClick={() => {
+                                    agregarEjercicio(dia);
+                                    setEditandoDia(null);
+                                    }}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                                >
+                                    ➕
+                                </button>
+                                </div>
+                            </div>
+                            ))}
+                        </div>
+                        </div>
+                    )}
+                    </div>
+                </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<GymTracker />);
+    </script>
 </body>
 </html>
-                
