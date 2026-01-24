@@ -7,13 +7,10 @@
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Ajustes menores para prevenir scroll innecesario en móviles */
         body { touch-action: manipulation; }
     </style>
 </head>
@@ -379,6 +376,7 @@
                 };
             };
 
+            // --- AQUÍ ESTÁ LA CORRECCIÓN ---
             const importarCSV = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -396,23 +394,36 @@
 
                     const nuevosRegistros = {};
                     
+                    // Mapa para guardar las IDs generadas por fecha
+                    // Si ya existe una ID para "2023-10-25", la reusamos.
+                    const sessionMap = {}; 
+                    
                     for (let i = 1; i < lineas.length; i++) {
                     const linea = lineas[i].split(',');
                     if (linea.length < 7) continue;
 
                     const [nombreDia, fecha, ejercicio, series, reps, peso, rir] = linea;
                     const dia = obtenerDiaDesdeNombre(nombreDia.trim());
+                    const fechaLimpia = fecha.trim();
                     
                     if (!dia) continue;
                     
                     if (!nuevosRegistros[dia]) nuevosRegistros[dia] = [];
 
-                    const sessionId = `${fecha.trim()}-imported-${i}`;
+                    // Lógica de agrupación corregida:
+                    // 1. Verificamos si ya tenemos una ID para esta fecha
+                    if (!sessionMap[fechaLimpia]) {
+                        // Si no existe, creamos una nueva y la guardamos en el mapa
+                        sessionMap[fechaLimpia] = `${fechaLimpia}-imported-${Date.now()}-${Math.random()}`;
+                    }
+                    
+                    // 2. Usamos la ID guardada en el mapa (así todos los ejercicios de esa fecha comparten ID)
+                    const sessionId = sessionMap[fechaLimpia];
                     
                     nuevosRegistros[dia].push({
                         id: Date.now() + Math.random() + i,
-                        sessionId,
-                        fecha: fecha.trim(),
+                        sessionId: sessionId,
+                        fecha: fechaLimpia,
                         ejercicio: ejercicio.trim(),
                         series: parseInt(series) || 0,
                         reps: parseInt(reps) || 0,
