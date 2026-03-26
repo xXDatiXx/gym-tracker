@@ -8,10 +8,43 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+        window.tailwind = {
+            config: {
+                theme: {
+                    extend: {
+                        colors: {
+                            'gym-bg':      '#0d0d0d',
+                            'gym-surface': '#161616',
+                            'gym-card':    '#1e1e1e',
+                            'gym-accent':  '#e8521a',
+                            'gym-accent2': '#f0a500',
+                            'gym-push':    '#e8521a',
+                            'gym-pull':    '#2196f3',
+                            'gym-legs':    '#4caf50',
+                            'gym-abs':     '#9c27b0',
+                            'gym-border':  '#2a2a2a',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        body { touch-action: manipulation; }
+        :root {
+            --bg: #0d0d0d;
+            --surface: #161616;
+            --card: #1e1e1e;
+            --accent: #e8521a;
+            --accent2: #f0a500;
+            --push: #e8521a;
+            --pull: #2196f3;
+            --legs: #4caf50;
+            --abs: #9c27b0;
+        }
+        body { touch-action: manipulation; background-color: var(--bg); }
     </style>
 </head>
 <body>
@@ -83,27 +116,18 @@
             const [diaActivo, setDiaActivo] = useState('lunes');
             const [vistaActiva, setVistaActiva] = useState('registro');
             const [registros, setRegistros] = useState({});
-            const [temaOscuro, setTemaOscuro] = useState(false);
+            const [temaOscuro, setTemaOscuro] = useState(true);
             const [archivoExpandido, setArchivoExpandido] = useState({});
             const [sesionesExpandidas, setSesionesExpandidas] = useState({});
-            const [diasSeleccionados, setDiasSeleccionados] = useState({
-                lunes: true,
-                martes: false,
-                miercoles: false,
-                jueves: false,
-                viernes: false
-            });
+            const [diasSeleccionados, setDiasSeleccionados] = useState(
+                Object.fromEntries(Object.keys(diasDefault).map((k, i) => [k, i === 0]))
+            );
             const [ultimaSesionAgregada, setUltimaSesionAgregada] = useState(null);
             const [editandoDia, setEditandoDia] = useState(null);
             const [nuevoEjercicio, setNuevoEjercicio] = useState('');
             const [mensajeImport, setMensajeImport] = useState(null);
-            
-            const [tiempoRestante, setTiempoRestante] = useState(90);
-            const [timerActivo, setTimerActivo] = useState(false);
-            const [tiempoPersonalizado, setTiempoPersonalizado] = useState('');
-            const [tiemposGuardados, setTiemposGuardados] = useState([90, 120]);
-            const [mostrarConfigTimer, setMostrarConfigTimer] = useState(false);
-            const timerInterval = useRef(null);
+            const [mostrarModalImport, setMostrarModalImport] = useState(false);
+            const [archivoImport, setArchivoImport] = useState(null);
             
             const fileInputRef = useRef(null);
 
@@ -111,12 +135,20 @@
                 const stored = localStorage.getItem('gymTrackerData');
                 const storedTema = localStorage.getItem('gymTrackerTema');
                 const storedDias = localStorage.getItem('gymTrackerDias');
-                const storedTiempos = localStorage.getItem('gymTrackerTiempos');
                 
                 if (stored) setRegistros(JSON.parse(stored));
                 if (storedTema) setTemaOscuro(storedTema === 'oscuro');
-                if (storedDias) setDias(JSON.parse(storedDias));
-                if (storedTiempos) setTiemposGuardados(JSON.parse(storedTiempos));
+                if (storedDias) {
+                    const parsedDias = JSON.parse(storedDias);
+                    setDias(parsedDias);
+                    setDiasSeleccionados(prev => {
+                        const updated = { ...prev };
+                        Object.keys(parsedDias).forEach(k => {
+                            if (!(k in updated)) updated[k] = false;
+                        });
+                        return updated;
+                    });
+                }
             }, []);
 
             useEffect(() => {
@@ -131,100 +163,39 @@
                 localStorage.setItem('gymTrackerDias', JSON.stringify(dias));
             }, [dias]);
 
-            useEffect(() => {
-                localStorage.setItem('gymTrackerTiempos', JSON.stringify(tiemposGuardados));
-            }, [tiemposGuardados]);
-
-            useEffect(() => {
-                if (timerActivo && tiempoRestante > 0) {
-                timerInterval.current = setInterval(() => {
-                    setTiempoRestante(prev => {
-                    if (prev <= 1) {
-                        setTimerActivo(false);
-                        reproducirSonido();
-                        return 0;
-                    }
-                    return prev - 1;
-                    });
-                }, 1000);
-                } else {
-                if (timerInterval.current) clearInterval(timerInterval.current);
-                }
-                return () => {
-                if (timerInterval.current) clearInterval(timerInterval.current);
-                };
-            }, [timerActivo, tiempoRestante]);
-
-            const reproducirSonido = () => {
-                try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-                } catch (error) {
-                console.log('Audio no disponible');
-                }
-            };
-
-            const iniciarTimer = (segundos) => {
-                setTiempoRestante(segundos);
-                setTimerActivo(true);
-            };
-
-            const pausarTimer = () => setTimerActivo(false);
-
-            const reiniciarTimer = () => {
-                setTimerActivo(false);
-                setTiempoRestante(90);
-            };
-
-            const agregarTiempoGuardado = () => {
-                const tiempo = parseInt(tiempoPersonalizado);
-                if (tiempo && tiempo > 0 && tiemposGuardados.length < 2) {
-                setTiemposGuardados([...tiemposGuardados, tiempo]);
-                setTiempoPersonalizado('');
-                }
-            };
-
-            const eliminarTiempoGuardado = (index) => {
-                setTiemposGuardados(tiemposGuardados.filter((_, i) => i !== index));
-            };
-
-            const formatearTiempo = (segundos) => {
-                const mins = Math.floor(segundos / 60);
-                const secs = segundos % 60;
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-            };
-
             const coloresDias = {
-                lunes: '#3B82F6',
-                martes: '#EF4444',
-                miercoles: '#10B981',
-                jueves: '#F59E0B',
-                viernes: '#8B5CF6'
+                lunes:     '#e8521a',
+                martes:    '#2196f3',
+                miercoles: '#4caf50',
+                jueves:    '#e8521a',
+                viernes:   '#2196f3',
+                sabado:    '#9c27b0',
+                domingo:   '#f0a500',
             };
 
-            const obtenerDiaDesdeNombre = (nombreDia) => {
-                const mapeo = {
-                'Lunes - Push Pecho': 'lunes',
-                'Martes - Pull Espalda': 'martes',
-                'Miércoles - Pierna + Abs': 'miercoles',
-                'Jueves - Push Hombro': 'jueves',
-                'Viernes - Pull Bíceps': 'viernes'
-                };
-                return mapeo[nombreDia] || null;
+            const obtenerColorDia = (diaKey, nombreDia = '') => {
+                if (coloresDias[diaKey]) return coloresDias[diaKey];
+                const n = nombreDia.toLowerCase();
+                if (n.includes('push')) return '#e8521a';
+                if (n.includes('pull')) return '#2196f3';
+                if (n.includes('pierna') || n.includes('leg')) return '#4caf50';
+                if (n.includes('abs') || n.includes('abdom')) return '#9c27b0';
+                return '#f0a500';
             };
+
+            const crearClaveDia = (nombreDia) => {
+                const mapa = {
+                    'Lunes': 'lunes', 'Martes': 'martes',
+                    'Miércoles': 'miercoles', 'Miercoles': 'miercoles',
+                    'Jueves': 'jueves', 'Viernes': 'viernes',
+                    'Sábado': 'sabado', 'Sabado': 'sabado',
+                    'Domingo': 'domingo',
+                };
+                const primera = nombreDia.trim().split(' ')[0];
+                return mapa[primera] || nombreDia.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z_]/g, '');
+            };
+
+            const obtenerDiaDesdeNombre = (nombreDia) => crearClaveDia(nombreDia);
 
             const calcular1RM = (peso, reps) => {
                 if (reps === 1) return peso;
@@ -376,11 +347,65 @@
                 };
             };
 
-            // --- AQUÍ ESTÁ LA CORRECCIÓN ---
-            const importarCSV = (e) => {
+            const manejarSeleccionArchivo = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
+                setArchivoImport(file);
+                setMostrarModalImport(true);
+                e.target.value = '';
+            };
 
+            const importarRutina = (file) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                try {
+                    const csv = event.target.result;
+                    const lineas = csv.split('\n').filter(l => l.trim());
+                    if (lineas.length < 2) {
+                    setMensajeImport({ tipo: 'error', texto: 'El archivo CSV de rutina está vacío' });
+                    return;
+                    }
+
+                    const nuevaRutina = {};
+                    const ordenDias = [];
+
+                    for (let i = 1; i < lineas.length; i++) {
+                    const cols = lineas[i].split(',');
+                    if (cols.length < 2) continue;
+                    const [nombreDia, ejercicio, series, reps] = cols;
+                    const clave = crearClaveDia(nombreDia.trim());
+                    const nombreLimpio = nombreDia.trim();
+                    if (!nuevaRutina[clave]) {
+                        nuevaRutina[clave] = { nombre: nombreLimpio, ejercicios: [] };
+                        ordenDias.push(clave);
+                    }
+                    if (ejercicio && ejercicio.trim()) {
+                        nuevaRutina[clave].ejercicios.push(ejercicio.trim());
+                    }
+                    }
+
+                    // Preserve ordering using a sorted object
+                    const rutenaOrdenada = {};
+                    ordenDias.forEach(k => { rutenaOrdenada[k] = nuevaRutina[k]; });
+
+                    setDias(rutenaOrdenada);
+                    setDiasSeleccionados(prev => {
+                    const updated = {};
+                    ordenDias.forEach((k, i) => { updated[k] = i === 0; });
+                    return updated;
+                    });
+                    setDiaActivo(ordenDias[0] || 'lunes');
+                    setMensajeImport({ tipo: 'exito', texto: `Rutina importada: ${ordenDias.length} días, ${Object.values(nuevaRutina).reduce((s, d) => s + d.ejercicios.length, 0)} ejercicios` });
+                    setTimeout(() => setMensajeImport(null), 4000);
+                } catch (error) {
+                    setMensajeImport({ tipo: 'error', texto: 'Error al procesar el CSV de rutina' });
+                    setTimeout(() => setMensajeImport(null), 3000);
+                }
+                };
+                reader.readAsText(file);
+            };
+
+            const importarRegistros = (file) => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                 try {
@@ -393,34 +418,30 @@
                     }
 
                     const nuevosRegistros = {};
-                    
-                    // Mapa para guardar las IDs generadas por fecha
-                    // Si ya existe una ID para "2023-10-25", la reusamos.
-                    const sessionMap = {}; 
+                    const sessionMap = {};
+                    const nuevosDiasDetectados = {};
                     
                     for (let i = 1; i < lineas.length; i++) {
                     const linea = lineas[i].split(',');
-                    if (linea.length < 7) continue;
+                    if (linea.length < 6) continue;
 
                     const [nombreDia, fecha, ejercicio, series, reps, peso, rir] = linea;
-                    const dia = obtenerDiaDesdeNombre(nombreDia.trim());
+                    const clave = crearClaveDia(nombreDia.trim());
                     const fechaLimpia = fecha.trim();
                     
-                    if (!dia) continue;
-                    
-                    if (!nuevosRegistros[dia]) nuevosRegistros[dia] = [];
-
-                    // Lógica de agrupación corregida:
-                    // 1. Verificamos si ya tenemos una ID para esta fecha
-                    if (!sessionMap[fechaLimpia]) {
-                        // Si no existe, creamos una nueva y la guardamos en el mapa
-                        sessionMap[fechaLimpia] = `${fechaLimpia}-imported-${Date.now()}-${Math.random()}`;
+                    // Auto-create day entry if not present
+                    if (!dias[clave] && !nuevosDiasDetectados[clave]) {
+                        nuevosDiasDetectados[clave] = { nombre: nombreDia.trim(), ejercicios: [] };
                     }
                     
-                    // 2. Usamos la ID guardada en el mapa (así todos los ejercicios de esa fecha comparten ID)
-                    const sessionId = sessionMap[fechaLimpia];
+                    if (!nuevosRegistros[clave]) nuevosRegistros[clave] = [];
+
+                    if (!sessionMap[`${clave}-${fechaLimpia}`]) {
+                        sessionMap[`${clave}-${fechaLimpia}`] = `${fechaLimpia}-imported-${Date.now()}-${Math.random()}`;
+                    }
+                    const sessionId = sessionMap[`${clave}-${fechaLimpia}`];
                     
-                    nuevosRegistros[dia].push({
+                    nuevosRegistros[clave].push({
                         id: Date.now() + Math.random() + i,
                         sessionId: sessionId,
                         fecha: fechaLimpia,
@@ -432,17 +453,33 @@
                     });
                     }
 
-                    setRegistros(nuevosRegistros);
-                    setMensajeImport({ tipo: 'exito', texto: `${lineas.length - 1} registros importados correctamente` });
+                    // Merge any auto-detected new days into dias
+                    if (Object.keys(nuevosDiasDetectados).length > 0) {
+                    const diasActualizados = { ...dias, ...nuevosDiasDetectados };
+                    setDias(diasActualizados);
+                    setDiasSeleccionados(prev => {
+                        const updated = { ...prev };
+                        Object.keys(nuevosDiasDetectados).forEach(k => { updated[k] = false; });
+                        return updated;
+                    });
+                    }
+
+                    setRegistros(prev => {
+                    const merged = { ...prev };
+                    Object.keys(nuevosRegistros).forEach(dia => {
+                        merged[dia] = [...(merged[dia] || []), ...nuevosRegistros[dia]];
+                    });
+                    return merged;
+                    });
+                    const total = Object.values(nuevosRegistros).reduce((s, r) => s + r.length, 0);
+                    setMensajeImport({ tipo: 'exito', texto: `${total} registros importados correctamente` });
                     setTimeout(() => setMensajeImport(null), 3000);
                 } catch (error) {
                     setMensajeImport({ tipo: 'error', texto: 'Error al procesar el archivo CSV' });
                     setTimeout(() => setMensajeImport(null), 3000);
                 }
                 };
-
                 reader.readAsText(file);
-                e.target.value = '';
             };
 
             const agregarSesionCompleta = (dia) => {
@@ -626,13 +663,13 @@
                 a.click();
             };
 
-            const bgPrimary = temaOscuro ? 'bg-gray-900' : 'bg-gray-50';
-            const bgSecundary = temaOscuro ? 'bg-gray-800' : 'bg-white';
+            const bgPrimary = temaOscuro ? 'bg-gym-bg' : 'bg-gray-50';
+            const bgSecundary = temaOscuro ? 'bg-gym-surface' : 'bg-white';
             const textPrimary = temaOscuro ? 'text-gray-100' : 'text-gray-800';
-            const textSecundary = temaOscuro ? 'text-gray-300' : 'text-gray-600';
-            const border = temaOscuro ? 'border-gray-700' : 'border-gray-200';
-            const hover = temaOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
-            const inputBg = temaOscuro ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+            const textSecundary = temaOscuro ? 'text-gray-400' : 'text-gray-600';
+            const border = temaOscuro ? 'border-gym-border' : 'border-gray-200';
+            const hover = temaOscuro ? 'hover:bg-gym-card' : 'hover:bg-gray-50';
+            const inputBg = temaOscuro ? 'bg-gym-card text-gray-100' : 'bg-white text-gray-900';
 
             return (
                 <div className={`min-h-screen ${bgPrimary} p-4`}>
@@ -643,34 +680,34 @@
                         <div className="flex gap-2 flex-wrap">
                         <button
                             onClick={() => setVistaActiva('estadisticas')}
-                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
+                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gym-card text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
                             title="Estadísticas"
                         >
                             🏆
                         </button>
                         <button
                             onClick={() => setVistaActiva('ajustes')}
-                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
+                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gym-card text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
                             title="Ajustes"
                         >
                             ⚙️
                         </button>
                         <button
                             onClick={() => setTemaOscuro(!temaOscuro)}
-                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
+                            className={`p-2 rounded-lg ${temaOscuro ? 'bg-gym-card text-yellow-400' : 'bg-gray-200 text-gray-700'} hover:opacity-80 transition`}
                         >
                             {temaOscuro ? '☀️' : '🌙'}
                         </button>
                         <input
                             type="file"
                             ref={fileInputRef}
-                            onChange={importarCSV}
+                            onChange={manejarSeleccionArchivo}
                             accept=".csv"
                             style={{ display: 'none' }}
                         />
                         <button
                             onClick={() => fileInputRef.current.click()}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+                            className="flex items-center gap-2 bg-gym-accent text-white px-3 py-2 rounded-lg hover:opacity-80 transition text-sm"
                         >
                             ⬆️ CSV
                         </button>
@@ -683,11 +720,59 @@
                         </div>
                     </div>
 
+                    {/* Import type modal */}
+                    {mostrarModalImport && (
+                        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+                        <div className={`${temaOscuro ? 'bg-gym-surface' : 'bg-white'} rounded-xl shadow-2xl p-6 max-w-sm w-full`}>
+                            <h3 className={`text-lg font-bold mb-2 ${textPrimary}`}>¿Qué tipo de datos deseas importar?</h3>
+                            <p className={`text-sm ${textSecundary} mb-6`}>
+                            Selecciona si el CSV contiene una <strong>rutina</strong> (plantilla de ejercicios) o <strong>registros de pesos</strong> (historial de entrenamientos).
+                            </p>
+                            <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => {
+                                setMostrarModalImport(false);
+                                importarRutina(archivoImport);
+                                setArchivoImport(null);
+                                }}
+                                className="flex items-center gap-3 bg-gym-accent text-white px-4 py-3 rounded-lg hover:opacity-80 transition text-left"
+                            >
+                                <span className="text-2xl">📋</span>
+                                <div>
+                                <div className="font-semibold">Rutina</div>
+                                <div className="text-xs opacity-80">Actualiza la plantilla de días y ejercicios</div>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => {
+                                setMostrarModalImport(false);
+                                importarRegistros(archivoImport);
+                                setArchivoImport(null);
+                                }}
+                                className="flex items-center gap-3 bg-gym-pull text-white px-4 py-3 rounded-lg hover:opacity-80 transition text-left"
+                            >
+                                <span className="text-2xl">📊</span>
+                                <div>
+                                <div className="font-semibold">Registros de pesos</div>
+                                <div className="text-xs opacity-80">Agrega el historial de entrenamientos</div>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => { setMostrarModalImport(false); setArchivoImport(null); }}
+                                className={`px-4 py-2 rounded-lg ${temaOscuro ? 'bg-gym-card text-gray-400' : 'bg-gray-200 text-gray-600'} hover:opacity-80 transition text-sm`}
+                            >
+                                Cancelar
+                            </button>
+                            </div>
+                        </div>
+                        </div>
+                    )}
+
                     {mensajeImport && (
                         <div className={`mb-4 p-4 rounded-lg ${
                         mensajeImport.tipo === 'exito' 
-                            ? 'bg-green-100 text-green-800 border border-green-300' 
-                            : 'bg-red-100 text-red-800 border border-red-300'
+                            ? 'bg-green-900 text-green-200 border border-green-700' 
+                            : 'bg-red-900 text-red-200 border border-red-700'
                         }`}>
                         {mensajeImport.texto}
                         </div>
@@ -700,8 +785,8 @@
                             onClick={() => setVistaActiva(vista)}
                             className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${
                             vistaActiva === vista
-                                ? 'bg-blue-600 text-white'
-                                : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
+                                ? 'bg-gym-accent text-white'
+                                : `${temaOscuro ? 'bg-gym-card text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
                             }`}
                         >
                             {vista === 'registro' && 'Registro'}
@@ -713,112 +798,16 @@
 
                     {vistaActiva === 'registro' && (
                         <div>
-                        <div className={`mb-6 p-4 border ${border} rounded-lg`}>
-                            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                            <h3 className={`font-semibold ${textPrimary} flex items-center gap-2`}>
-                                ⏱️ Temporizador
-                            </h3>
-                            <button
-                                onClick={() => setMostrarConfigTimer(!mostrarConfigTimer)}
-                                className={`text-sm ${textSecundary} hover:opacity-70`}
-                            >
-                                {mostrarConfigTimer ? 'Ocultar' : 'Config'}
-                            </button>
-                            </div>
-                            
-                            <div className="flex items-center gap-3 flex-wrap">
-                            <div className={`text-4xl font-bold ${textPrimary}`}>
-                                {formatearTiempo(tiempoRestante)}
-                            </div>
-                            
-                            <div className="flex gap-2">
-                                {timerActivo ? (
-                                <button
-                                    onClick={pausarTimer}
-                                    className="bg-yellow-600 text-white px-3 py-2 rounded-lg hover:bg-yellow-700 transition"
-                                >
-                                    ⏸️
-                                </button>
-                                ) : (
-                                <button
-                                    onClick={() => setTimerActivo(true)}
-                                    className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition"
-                                >
-                                    ▶️
-                                </button>
-                                )}
-                                
-                                <button
-                                onClick={reiniciarTimer}
-                                className="bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 transition"
-                                >
-                                🔄
-                                </button>
-                            </div>
-                            
-                            <div className="flex gap-2">
-                                {tiemposGuardados.map((tiempo, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => iniciarTimer(tiempo)}
-                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
-                                >
-                                    {formatearTiempo(tiempo)}
-                                </button>
-                                ))}
-                            </div>
-                            </div>
-                            
-                            {mostrarConfigTimer && (
-                            <div className={`mt-4 pt-4 border-t ${border}`}>
-                                <p className={`text-sm ${textSecundary} mb-3`}>
-                                Tiempos guardados ({tiemposGuardados.length}/2)
-                                </p>
-                                <div className="flex gap-2 items-center flex-wrap">
-                                {tiemposGuardados.map((tiempo, idx) => (
-                                    <div key={idx} className="flex items-center gap-1 bg-gray-200 rounded px-2 py-1">
-                                    <span className="text-sm text-gray-800">{tiempo}s</span>
-                                    <button
-                                        onClick={() => eliminarTiempoGuardado(idx)}
-                                        className="p-1 text-red-600 hover:text-red-800"
-                                    >
-                                        ❌
-                                    </button>
-                                    </div>
-                                ))}
-                                
-                                {tiemposGuardados.length < 2 && (
-                                    <div className="flex gap-2">
-                                    <input
-                                        type="number"
-                                        value={tiempoPersonalizado}
-                                        onChange={(e) => setTiempoPersonalizado(e.target.value)}
-                                        placeholder="90"
-                                        className={`border ${border} rounded px-2 py-1 w-20 ${inputBg}`}
-                                        min="1"
-                                    />
-                                    <button
-                                        onClick={agregarTiempoGuardado}
-                                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
-                                    >
-                                        +
-                                    </button>
-                                    </div>
-                                )}
-                                </div>
-                            </div>
-                            )}
-                        </div>
-
                         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
                             {Object.keys(dias).map(dia => (
                             <button
                                 key={dia}
                                 onClick={() => setDiaActivo(dia)}
+                                style={diaActivo === dia ? { backgroundColor: obtenerColorDia(dia, dias[dia]?.nombre), color: '#fff' } : {}}
                                 className={`px-4 py-2 rounded-lg whitespace-nowrap transition ${
                                 diaActivo === dia
-                                    ? 'bg-blue-600 text-white'
-                                    : `${temaOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
+                                    ? ''
+                                    : `${temaOscuro ? 'bg-gym-card text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
                                 }`}
                             >
                                 {dias[dia].nombre}
@@ -829,7 +818,7 @@
                         <div className="mb-4">
                             <button
                             onClick={() => agregarSesionCompleta(diaActivo)}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                            className="flex items-center gap-2 bg-gym-accent text-white px-4 py-2 rounded-lg hover:opacity-80 transition"
                             >
                             ➕ Agregar Sesión del Día
                             </button>
@@ -891,7 +880,7 @@
                                         <div className="overflow-x-auto">
                                             <table className="w-full">
                                             <thead>
-                                                <tr className={temaOscuro ? 'bg-gray-700' : 'bg-gray-100'}>
+                                                <tr className={temaOscuro ? 'bg-gym-card' : 'bg-gray-100'}>
                                                 <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>Ejercicio</th>
                                                 <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>S</th>
                                                 <th className={`px-2 py-2 text-left text-xs font-semibold ${textPrimary}`}>R</th>
@@ -1054,7 +1043,7 @@
                                 </div>
                                 </div>
                                 
-                                <div className={`p-4 border ${border} rounded-lg ${temaOscuro ? 'bg-gray-700' : 'bg-blue-50'}`}>
+                                <div className={`p-4 border ${border} rounded-lg ${temaOscuro ? 'bg-gym-card' : 'bg-blue-50'}`}>
                                 <p className={`text-sm ${textSecundary}`}>
                                     <strong>🛡️ Protección:</strong> 2 protectores por semana (no acumulables). Puedes descansar hasta 3 días sin romper racha.
                                 </p>
@@ -1076,11 +1065,11 @@
                                 <label key={dia} className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    checked={diasSeleccionados[dia]}
+                                    checked={!!diasSeleccionados[dia]}
                                     onChange={(e) => setDiasSeleccionados({...diasSeleccionados, [dia]: e.target.checked})}
                                     className="w-4 h-4"
                                 />
-                                <span className={textPrimary} style={{ color: coloresDias[dia] }}>
+                                <span className={textPrimary} style={{ color: obtenerColorDia(dia, dias[dia]?.nombre) }}>
                                     {dias[dia].nombre.split(' - ')[0]}
                                 </span>
                                 </label>
@@ -1150,7 +1139,7 @@
                                                     y1={y}
                                                     x2={nextX}
                                                     y2={nextY}
-                                                    stroke={coloresDias[dato.dia]}
+                                                    stroke={obtenerColorDia(dato.dia, dias[dato.dia]?.nombre)}
                                                     strokeWidth="2"
                                                     vectorEffect="non-scaling-stroke"
                                                     />
@@ -1160,7 +1149,7 @@
                                                 cx={x}
                                                 cy={y}
                                                 r="1.5"
-                                                fill={coloresDias[dato.dia]}
+                                                fill={obtenerColorDia(dato.dia, dias[dato.dia]?.nombre)}
                                                 vectorEffect="non-scaling-stroke"
                                                 />
                                                 <text
@@ -1187,9 +1176,9 @@
                                         </svg>
                                     </div>
                                     
-                                    <div className={`p-3 ${temaOscuro ? 'bg-gray-700' : 'bg-blue-50'} rounded-lg`}>
+                                    <div className={`p-3 ${temaOscuro ? 'bg-gym-card' : 'bg-blue-50'} rounded-lg`}>
                                         <p className={`text-base font-semibold ${textPrimary}`}>
-                                        1RM: <span className="text-blue-600">{rm1 > 0 ? `${rm1} kg` : 'N/A'}</span>
+                                        1RM: <span className="text-gym-accent">{rm1 > 0 ? `${rm1} kg` : 'N/A'}</span>
                                         </p>
                                         <p className={`text-xs ${textSecundary}`}>Fórmula de Epley</p>
                                     </div>
@@ -1213,11 +1202,11 @@
                                 <label key={dia} className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    checked={diasSeleccionados[dia]}
+                                    checked={!!diasSeleccionados[dia]}
                                     onChange={(e) => setDiasSeleccionados({...diasSeleccionados, [dia]: e.target.checked})}
                                     className="w-4 h-4"
                                 />
-                                <span className={textPrimary} style={{ color: coloresDias[dia] }}>
+                                <span className={textPrimary} style={{ color: obtenerColorDia(dia, dias[dia]?.nombre) }}>
                                     {dias[dia].nombre.split(' - ')[0]}
                                 </span>
                                 </label>
@@ -1277,7 +1266,7 @@
                                                 y1={y}
                                                 x2={nextX}
                                                 y2={nextY}
-                                                stroke={coloresDias[dia]}
+                                                stroke={obtenerColorDia(dia, dias[dia]?.nombre)}
                                                 strokeWidth="2"
                                                 vectorEffect="non-scaling-stroke"
                                                 />
@@ -1287,7 +1276,7 @@
                                             cx={x}
                                             cy={y}
                                             r="1.5"
-                                            fill={coloresDias[dia]}
+                                            fill={obtenerColorDia(dia, dias[dia]?.nombre)}
                                             vectorEffect="non-scaling-stroke"
                                             />
                                             <text
@@ -1322,7 +1311,7 @@
                                     <div key={dia} className="flex items-center gap-2">
                                         <div 
                                         className="w-4 h-4 rounded"
-                                        style={{ backgroundColor: coloresDias[dia] }}
+                                        style={{ backgroundColor: obtenerColorDia(dia, dias[dia]?.nombre) }}
                                         />
                                         <span className={`${textSecundary} text-sm`}>{dias[dia].nombre.split(' - ')[0]}</span>
                                     </div>
@@ -1394,7 +1383,7 @@
                                     agregarEjercicio(dia);
                                     setEditandoDia(null);
                                     }}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                                    className="bg-gym-accent text-white px-4 py-2 rounded hover:opacity-80 transition"
                                 >
                                     ➕
                                 </button>
