@@ -45,6 +45,20 @@
             --abs: #9c27b0;
         }
         body { touch-action: manipulation; background-color: var(--bg); }
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            background-color: #1e1e1e;
+            color: #f3f4f6;
+            color-scheme: dark;
+        }
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] textarea::placeholder {
+            color: #6b7280;
+        }
+        [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
     </style>
 </head>
 <body>
@@ -376,11 +390,18 @@
                     const clave = crearClaveDia(nombreDia.trim());
                     const nombreLimpio = nombreDia.trim();
                     if (!nuevaRutina[clave]) {
-                        nuevaRutina[clave] = { nombre: nombreLimpio, ejercicios: [] };
+                        nuevaRutina[clave] = { nombre: nombreLimpio, ejercicios: [], seriesReps: {} };
                         ordenDias.push(clave);
                     }
                     if (ejercicio && ejercicio.trim()) {
-                        nuevaRutina[clave].ejercicios.push(ejercicio.trim());
+                        const nombreEjercicio = ejercicio.trim();
+                        nuevaRutina[clave].ejercicios.push(nombreEjercicio);
+                        if (series || reps) {
+                        nuevaRutina[clave].seriesReps[nombreEjercicio] = {
+                            series: parseInt(series) || 3,
+                            reps: parseInt(reps) || 8
+                        };
+                        }
                     }
                     }
 
@@ -492,13 +513,14 @@
                 const sessionId = `${fecha}-${Date.now()}`;
                 
                 dias[dia].ejercicios.forEach(ejercicio => {
+                const defaults = dias[dia].seriesReps?.[ejercicio];
                 nuevosRegistros[dia].push({
                     id: Date.now() + Math.random(),
                     sessionId,
                     fecha,
                     ejercicio,
-                    series: 3,
-                    reps: 8,
+                    series: defaults?.series ?? 3,
+                    reps: defaults?.reps ?? 8,
                     peso: 0,
                     rir: ''
                 });
@@ -672,7 +694,7 @@
             const inputBg = temaOscuro ? 'bg-gym-card text-gray-100' : 'bg-white text-gray-900';
 
             return (
-                <div className={`min-h-screen ${bgPrimary} p-4`}>
+                <div className={`min-h-screen ${bgPrimary} p-4`} data-theme={temaOscuro ? 'dark' : 'light'}>
                 <div className="max-w-7xl mx-auto">
                     <div className={`${bgSecundary} rounded-lg shadow-lg p-6 mb-6`}>
                     <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
@@ -798,6 +820,7 @@
 
                     {vistaActiva === 'registro' && (
                         <div>
+                        <hr style={{ borderColor: obtenerColorDia(diaActivo, dias[diaActivo]?.nombre), borderTopWidth: '2px' }} className="mb-4" />
                         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
                             {Object.keys(dias).map(dia => (
                             <button
@@ -837,7 +860,7 @@
                                     const isNueva = ultimaSesionAgregada === sesion.sessionId;
                                     
                                     return (
-                                    <div key={sesion.sessionId} className={`border ${border} rounded-lg overflow-hidden ${isNueva ? 'ring-2 ring-green-500' : ''}`}>
+                                    <div key={sesion.sessionId} className={`border ${border} border-l-4 rounded-lg overflow-hidden ${isNueva ? 'ring-2 ring-green-500' : ''}`} style={{ borderLeftColor: obtenerColorDia(diaActivo, dias[diaActivo]?.nombre) }}>
                                         <div
                                         className={`flex items-center justify-between p-4 cursor-pointer ${hover}`}
                                         onClick={(e) => {
@@ -974,7 +997,7 @@
                                     {archivoExpandido[diaActivo] && (
                                     <div className="space-y-4 mt-4">
                                         {sesionesArchivadas.map((sesion) => (
-                                        <div key={sesion.sessionId} className={`border ${border} rounded-lg p-4`}>
+                                        <div key={sesion.sessionId} className={`border ${border} border-l-4 rounded-lg p-4`} style={{ borderLeftColor: obtenerColorDia(diaActivo, dias[diaActivo]?.nombre) }}>
                                             <div className="flex items-center justify-between mb-2">
                                             <span className={`font-semibold ${textPrimary}`}>{sesion.fecha}</span>
                                             <span className={`text-sm ${textSecundary}`}>
