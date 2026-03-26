@@ -385,10 +385,10 @@
                     }
 
                     // Preserve ordering using a sorted object
-                    const rutenaOrdenada = {};
-                    ordenDias.forEach(k => { rutenaOrdenada[k] = nuevaRutina[k]; });
+                    const rutinaOrdenada = {};
+                    ordenDias.forEach(k => { rutinaOrdenada[k] = nuevaRutina[k]; });
 
-                    setDias(rutenaOrdenada);
+                    setDias(rutinaOrdenada);
                     setDiasSeleccionados(prev => {
                     const updated = {};
                     ordenDias.forEach((k, i) => { updated[k] = i === 0; });

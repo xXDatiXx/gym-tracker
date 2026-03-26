@@ -64,7 +64,7 @@ Sábado - Full Body,Peso Muerto (Barra),4,5
 > - La primera fila es la cabecera (obligatoria).
 > - El nombre del día puede ser cualquier texto; la parte antes del espacio se usa como clave.  
 >   Días reconocidos automáticamente: `Lunes`, `Martes`, `Miércoles`, `Jueves`, `Viernes`, `Sábado`, `Domingo`.
-> - Las columnas `Series` y `Reps` de la rutina son solo informativas (valores por defecto al crear la sesión).
+> - Las columnas `Series` y `Reps` son **requeridas en el CSV** pero sus valores son solo informativos; no se usan en la aplicación al crear sesiones (cada sesión se edita manualmente).
 > - Cada día puede tener un número distinto de ejercicios.
 > - Si el CSV incluye 6 días, la aplicación crea el 6.º día automáticamente.
 
