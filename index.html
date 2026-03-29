@@ -126,8 +126,18 @@
                 }
             };
 
+            const obtenerDiaActualKey = (diasObj) => {
+                try {
+                    const mapaDias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+                    const key = mapaDias[new Date().getDay()];
+                    return diasObj[key] ? key : 'lunes';
+                } catch (e) {
+                    return 'lunes';
+                }
+            };
+
             const [dias, setDias] = useState(diasDefault);
-            const [diaActivo, setDiaActivo] = useState('lunes');
+            const [diaActivo, setDiaActivo] = useState(() => obtenerDiaActualKey(diasDefault));
             const [vistaActiva, setVistaActiva] = useState('registro');
             const [registros, setRegistros] = useState({});
             const [temaOscuro, setTemaOscuro] = useState(true);
@@ -155,6 +165,7 @@
                 if (storedDias) {
                     const parsedDias = JSON.parse(storedDias);
                     setDias(parsedDias);
+                    setDiaActivo(obtenerDiaActualKey(parsedDias));
                     setDiasSeleccionados(prev => {
                         const updated = { ...prev };
                         Object.keys(parsedDias).forEach(k => {
@@ -195,6 +206,15 @@
                 if (n.includes('pierna') || n.includes('leg')) return '#4caf50';
                 if (n.includes('abs') || n.includes('abdom')) return '#9c27b0';
                 return '#f0a500';
+            };
+
+            const obtenerTipoRutina = (nombreDia = '') => {
+                const n = nombreDia.toLowerCase();
+                if (n.includes('push')) return 'Push';
+                if (n.includes('pull')) return 'Pull';
+                if (n.includes('pierna') || n.includes('leg')) return 'Legs';
+                if (n.includes('abs') || n.includes('abdom')) return 'Abs';
+                return '';
             };
 
             const crearClaveDia = (nombreDia) => {
@@ -827,13 +847,18 @@
                                 key={dia}
                                 onClick={() => setDiaActivo(dia)}
                                 style={diaActivo === dia ? { backgroundColor: obtenerColorDia(dia, dias[dia]?.nombre), color: '#fff' } : {}}
-                                className={`px-4 py-2 rounded-lg whitespace-nowrap transition ${
+                                className={`flex flex-col items-center justify-center w-16 h-16 rounded-lg transition flex-shrink-0 ${
                                 diaActivo === dia
                                     ? ''
                                     : `${temaOscuro ? 'bg-gym-card text-gray-300' : 'bg-gray-200 text-gray-700'} hover:opacity-80`
                                 }`}
                             >
-                                {dias[dia].nombre}
+                                <span className="text-sm font-bold leading-none">
+                                    {(dias[dia]?.nombre.split(' ')[0] ?? '').slice(0, 3)}
+                                </span>
+                                <span className="text-xs leading-none mt-1 opacity-80">
+                                    {obtenerTipoRutina(dias[dia]?.nombre)}
+                                </span>
                             </button>
                             ))}
                         </div>
